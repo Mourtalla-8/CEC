@@ -1,0 +1,290 @@
+<!-- Template HTML pour le composant d'inscription -->
+<div class="signup-container">
+  <!-- Carte d'inscription -->
+  <mat-card class="signup-card">
+    <!-- En-tête avec indicateur d'étapes -->
+    <mat-card-header class="signup-header">
+      <div mat-card-avatar class="signup-avatar">
+        <mat-icon>person_add</mat-icon>
+      </div>
+      <mat-card-title>Inscription Personne Handicapée</mat-card-title>
+    </mat-card-header>
+
+    <!-- Indicateur de progression -->
+    <div class="progress-indicator">
+      <div class="step" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
+        <div class="step-number">1</div>
+        <div class="step-label">Informations</div>
+      </div>
+      <div class="step-connector" [class.completed]="currentStep > 1"></div>
+      <div class="step" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2">
+        <div class="step-number">2</div>
+        <div class="step-label">Vérification</div>
+      </div>
+      <div class="step-connector" [class.completed]="currentStep > 2"></div>
+      <div class="step" [class.active]="currentStep >= 3" [class.completed]="currentStep > 3">
+        <div class="step-number">3</div>
+        <div class="step-label">Mot de passe</div>
+      </div>
+    </div>
+
+    <!-- Contenu de la carte -->
+    <mat-card-content class="signup-content">
+
+      <!-- ÉTAPE 1: Informations personnelles -->
+      <div *ngIf="currentStep === 1" class="step-content">
+        <h3>
+          <mat-icon>person</mat-icon>
+          Vos informations personnelles
+        </h3>
+        
+        <form [formGroup]="step1Form" (ngSubmit)="submitStep1()" class="signup-form">
+          <!-- Prénom et Nom -->
+          <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                  <mat-label>Prénom</mat-label>
+                  <input matInput formControlName="prenom" placeholder="Votre prénom">
+                  <mat-error>Le prénom est requis</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Nom</mat-label>
+                <input matInput formControlName="nom" placeholder="Votre nom">
+                <mat-error>Le nom est requis</mat-error>
+            </mat-form-field>
+
+          </div>
+
+          <!-- Sexe et Date de naissance -->
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Sexe</mat-label>
+              <mat-select formControlName="sexe">
+                <mat-option value="M">Masculin</mat-option>
+                <mat-option value="F">Féminin</mat-option>
+              </mat-select>
+              <mat-error>Le sexe est requis</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Date de naissance</mat-label>
+              <input
+                matInput
+                [matDatepicker]="picker"
+                formControlName="dateNaissance"
+                placeholder="JJ/MM/AAAA"
+                (focus)="picker.open()"
+                readonly
+              >
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+              <mat-error>La date de naissance est requise</mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Type de handicap -->
+          <mat-form-field appearance="outline">
+            <mat-label>Type de handicap</mat-label>
+            <mat-select formControlName="typeHandicap">
+              <mat-option value="Moteur">Moteur</mat-option>
+              <mat-option value="Visuel">Visuel</mat-option>
+              <mat-option value="Auditif">Auditif</mat-option>
+              <mat-option value="Mental">Mental</mat-option>
+              <mat-option value="Psychique">Psychique</mat-option>
+              <mat-option value="Polyhandicap">Polyhandicap</mat-option>
+              <mat-option value="Cognitif">Cognitif</mat-option>
+              <mat-option value="Communication">Communication</mat-option>
+            </mat-select>
+            <mat-error>Le type de handicap est requis</mat-error>
+          </mat-form-field>
+
+
+          <!-- Adresse -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Adresse complète</mat-label>
+            <textarea matInput rows="2" formControlName="adresse" placeholder="Votre adresse complète"></textarea>
+            <mat-error>L'adresse est requise</mat-error>
+          </mat-form-field>
+
+          <!-- Téléphone et Email -->
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Téléphone</mat-label>
+              <input matInput formControlName="telephone" placeholder="votre numéro">
+              <mat-icon matSuffix>phone</mat-icon>
+              <mat-error>Le téléphone est requis</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" formControlName="email" placeholder="votre.email@exemple.com">
+              <mat-icon matSuffix>email</mat-icon>
+              <mat-error *ngIf="step1Form.get('email')?.hasError('required')">L'email est requis</mat-error>
+              <mat-error *ngIf="step1Form.get('email')?.hasError('email')">Format d'email invalide</mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Boutons d'action -->
+          <div class="form-actions">
+            <button mat-button routerLink="/login" type="button" aria-label="Retour à la page de connexion">
+              <mat-icon>arrow_back</mat-icon>
+              Retour à la connexion
+            </button>
+            
+            <button mat-raised-button color="primary" type="submit" [disabled]="step1Form.invalid || isLoading" aria-label="Passer à l'étape suivante">
+              <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+              <span *ngIf="!isLoading">Étape suivante</span>
+              <mat-icon *ngIf="!isLoading">arrow_forward</mat-icon>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ÉTAPE 2: Vérification du code -->
+      <div *ngIf="currentStep === 2" class="step-content">
+        <h3>
+          <mat-icon>verified_user</mat-icon>
+          Vérification de votre email
+        </h3>
+        
+        <div class="verification-info">
+          <p>Un code de vérification a été envoyé à :</p>
+          <strong>{{ userEmail }}</strong>
+          <p class="dev-note">
+            <mat-icon>info</mat-icon>
+            En développement, le code s'affiche dans la console du navigateur
+          </p>
+        </div>
+
+        <form [formGroup]="step2Form" (ngSubmit)="submitStep2()" class="signup-form">
+          <mat-form-field appearance="outline" class="full-width code-field">
+            <mat-label>Code de vérification</mat-label>
+            <input 
+              matInput 
+              formControlName="code" 
+              placeholder="123456"
+              maxlength="6"
+              class="code-input">
+            <mat-hint>Saisissez le code à 6 chiffres reçu par email</mat-hint>
+            <mat-error>Un code de 6 chiffres est requis</mat-error>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-button type="button" (click)="goToPreviousStep()" aria-label="Revenir à l'étape précédente">
+              <mat-icon>arrow_back</mat-icon>
+              Retour
+            </button>
+
+            <!-- Bouton renvoi de code -->
+            <button 
+              mat-button 
+              color="accent" 
+              type="button" 
+              (click)="resendCode()"
+              [disabled]="resendDisabled || isLoading"
+              class="resend-button"
+              aria-label="Renvoyer le code de vérification">
+              <mat-icon>refresh</mat-icon>
+              {{ getResendButtonText() }}
+            </button>
+            
+            <button mat-raised-button color="primary" type="submit" [disabled]="step2Form.invalid || isLoading" aria-label="Vérifier le code">
+              <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+              <span *ngIf="!isLoading">Vérifier le code</span>
+              <mat-icon *ngIf="!isLoading">check</mat-icon>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ÉTAPE 3: Création du mot de passe -->
+      <div *ngIf="currentStep === 3" class="step-content">
+        <h3>
+          <mat-icon>lock</mat-icon>
+          Créez votre mot de passe
+        </h3>
+        
+        <div class="success-info">
+          <mat-icon>check_circle</mat-icon>
+          <p>Code vérifié avec succès ! Créez maintenant votre mot de passe sécurisé.</p>
+        </div>
+
+        <form [formGroup]="step3Form" (ngSubmit)="submitStep3()" class="signup-form">
+          <input
+            type="email"
+            name="email"
+            autocomplete="username"
+            [value]="userEmail || ''"
+            hidden
+            tabindex="-1"
+            aria-hidden="true">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Mot de passe</mat-label>
+            <input 
+              matInput 
+              [type]="hidePassword ? 'password' : 'text'" 
+              formControlName="motDePasse"
+              placeholder="Minimum 8 caractères"
+              autocomplete="new-password">
+            <button 
+              mat-icon-button 
+              matSuffix 
+              type="button"
+              (click)="hidePassword = !hidePassword">
+              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error>Le mot de passe doit contenir au moins 8 caractères</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Confirmer le mot de passe</mat-label>
+            <input 
+              matInput 
+              [type]="hideConfirmPassword ? 'password' : 'text'" 
+              formControlName="confirmerMotDePasse"
+              placeholder="Répétez votre mot de passe"
+              autocomplete="new-password">
+            <button 
+              mat-icon-button 
+              matSuffix 
+              type="button"
+              (click)="hideConfirmPassword = !hideConfirmPassword">
+              <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="step3Form.get('confirmerMotDePasse')?.hasError('required')">
+              La confirmation est requise
+            </mat-error>
+            <mat-error *ngIf="step3Form.get('confirmerMotDePasse')?.hasError('mismatch')">
+              Les mots de passe ne correspondent pas
+            </mat-error>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-button type="button" (click)="goToPreviousStep()" aria-label="Revenir à l'étape précédente">
+              <mat-icon>arrow_back</mat-icon>
+              Retour
+            </button>
+            
+            <button mat-raised-button color="primary" type="submit" [disabled]="step3Form.invalid || isLoading" aria-label="Finaliser l'inscription">
+              <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+              <span *ngIf="!isLoading">Finaliser l'inscription</span>
+              <mat-icon *ngIf="!isLoading">done</mat-icon>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Messages d'erreur et de succès -->
+      <div *ngIf="errorMessage" class="error-message" role="alert" aria-live="polite">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <div *ngIf="successMessage" class="success-message" role="status" aria-live="polite">
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ successMessage }}</span>
+      </div>
+
+    </mat-card-content>
+  </mat-card>
+</div>

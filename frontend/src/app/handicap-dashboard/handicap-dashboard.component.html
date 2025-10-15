@@ -1,0 +1,426 @@
+<div class="dashboard-container">
+
+<!-- En-tête moderne de page (Handicap) -->
+<div class="page-header" aria-label="En-tête de l'espace handicapé">
+  <div class="page-title">
+    <mat-icon class="title-icon" (click)="refreshPage()" (keydown.enter)="refreshPage()" (keydown.space)="refreshPage()" role="link" tabindex="0">accessible</mat-icon>
+    <div>
+      <h1 (click)="refreshPage()" role="link" tabindex="0">Espace Handicapé | {{ (profile?.prenom || currentUser?.prenom) || 'Utilisateur' }} {{ (profile?.nom || currentUser?.nom) || '' }}</h1>
+      <p class="subtitle">Suivi de ma carte CEC, de mes demandes et documents</p>
+    </div>
+  </div>
+  <div class="page-actions">
+    <button mat-stroked-button color="primary" (click)="toggleProfile()" [attr.aria-expanded]="showProfile" [attr.aria-controls]="'handicap-profile-panel'">
+      <mat-icon>person</mat-icon>
+      Profil
+    </button>
+    <button mat-stroked-button color="warn" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      Déconnexion
+    </button>
+  </div>
+  </div>
+
+<!-- Profil collapsible panel -->
+<mat-card *ngIf="showProfile" id="handicap-profile-panel" class="profile-panel" aria-live="polite">
+  <mat-card-content>
+    <div class="profile-grid">
+      <div class="profile-row">
+        <mat-icon>person</mat-icon>
+        <div>
+          <strong>{{ profile?.prenom || currentUser?.prenom }} {{ profile?.nom || currentUser?.nom }}</strong>
+          <div class="muted">{{ profile?.email || currentUser?.email }}</div>
+        </div>
+      </div>
+      <div class="profile-row">
+        <mat-icon>phone</mat-icon>
+        <div>
+          <strong>Téléphone</strong>
+          <div class="muted">{{ profile?.telephone || '—' }}</div>
+        </div>
+      </div>
+      <div class="profile-row">
+        <mat-icon>home</mat-icon>
+        <div>
+          <strong>Adresse</strong>
+          <div class="muted">{{ profile?.adresse || '—' }}</div>
+        </div>
+      </div>
+      <div class="profile-row">
+        <mat-icon>event</mat-icon>
+        <div>
+          <strong>Date de naissance</strong>
+          <div class="muted">{{ profile?.dateNaissance | date:'dd/MM/yyyy' }}</div>
+        </div>
+      </div>
+      <div class="profile-row">
+        <mat-icon>accessible</mat-icon>
+        <div>
+          <strong>Type de handicap</strong>
+          <div class="muted">{{ profile?.typeHandicap || '—' }}</div>
+        </div>
+      </div>
+      <div class="profile-row">
+        <mat-icon>wc</mat-icon>
+        <div>
+          <strong>Sexe</strong>
+          <div class="muted">{{ profile?.sexe || '—' }}</div>
+        </div>
+      </div>
+    </div>
+  </mat-card-content>
+  </mat-card>
+
+<!-- Carte CEC details (au-dessus des onglets) -->
+<div *ngIf="carte" class="carte-banner" id="carte">
+  <mat-card class="cartecec-card">
+    <div class="sn-band"></div>
+    <div class="cartecec-header">
+      <div class="left">
+        <mat-icon class="handicap-icon">accessible</mat-icon>
+        <span class="title">Carte CEC</span>
+      </div>
+      <div class="right">
+        <span class="sn-flag" aria-label="Sénégal" title="Sénégal">🇸🇳</span>
+        <mat-chip [color]="carte.statut === 'valide' ? 'primary' : 'warn'" selected>
+          {{ carte.statut === 'valide' ? 'Valide' : 'Expirée' }}
+        </mat-chip>
+      </div>
+    </div>
+    <div class="cartecec-body">
+      <div class="card-layout">
+        <div class="photo-slot" aria-label="Photo"></div>
+        <div class="grid compact">
+          <div><strong>Numéro</strong><br>{{ carte.numeroCarte }}</div>
+          <div><strong>Délivrée le</strong><br>{{ carte.dateDelivrance | date:'dd/MM/yyyy' }}</div>
+          <div><strong>Expire le</strong><br>{{ carte.dateExpiration | date:'dd/MM/yyyy' }}</div>
+          <div *ngIf="carte.nombreRenouvellements > 0"><strong>Renouvellements</strong><br>{{ carte.nombreRenouvellements }}</div>
+          <div><strong>Nom</strong><br>{{ profile?.nom }}</div>
+          <div><strong>Prénom</strong><br>{{ profile?.prenom }}</div>
+          <div><strong>Sexe</strong><br>{{ profile?.sexe }}</div>
+          <div><strong>Date de naissance</strong><br>{{ profile?.dateNaissance | date:'dd/MM/yyyy' }}</div>
+          <div class="span-2"><strong>Type de handicap</strong><br>{{ profile?.typeHandicap }}</div>
+        </div>
+      </div>
+    </div>
+  </mat-card>
+
+  <div class="carte-actions" *ngIf="isCarteExpiringSoon" role="region" aria-label="Section de renouvellement de la carte">
+    <div class="renew-content">
+      <div class="renew-info">
+        <div class="renew-text">
+          <div class="renew-title">
+            <mat-icon class="renew-icon" aria-hidden="true">schedule</mat-icon>
+            Votre carte expire bientôt
+          </div>
+          <div class="renew-subtitle">Expiration le {{ carte.dateExpiration | date:'dd/MM/yyyy' }} • Renouvelez dès maintenant pour éviter toute interruption.</div>
+        </div>
+      </div>
+      <div class="renew-actions">
+        <div class="renew-row" *ngIf="!eligibility?.canRenew && !lockAllActions">
+          <div class="renew-banner" id="renew-msg" role="status" aria-live="polite">
+            <mat-icon color="warn">info</mat-icon>
+            <span>Documents requis manquants. Ajoutez le <strong>certificat de perte</strong> si nécessaire.</span>
+          </div>
+        </div>
+
+        <div class="renew-row" *ngIf="!eligibility?.canRenew && !lockAllActions">
+          <div class="renew-upload">
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png" hidden #certPerteInput (change)="onCertificatPerteSelected($event)" />
+            <button mat-stroked-button color="primary"
+                    (click)="certPerteInput.click()"
+                    [disabled]="isUploadingDocument"
+                    aria-label="Uploader le certificat de perte">
+              <mat-icon>upload_file</mat-icon>
+              Uploader le certificat de perte
+            </button>
+          </div>
+        </div>
+
+        <mat-divider class="renew-sep" *ngIf="!eligibility?.canRenew && !lockAllActions"></mat-divider>
+
+        <div class="renew-row">
+          <button class="renew-cta" mat-raised-button color="accent"
+                  (click)="renewCarte()"
+                  [disabled]="isCreatingDemande || lockAllActions || !eligibility?.canRenew"
+                  aria-label="Renouveler ma carte"
+                  [attr.aria-describedby]="!eligibility?.canRenew && !lockAllActions ? 'renew-msg' : null">
+            <mat-icon>autorenew</mat-icon>
+            Renouveler maintenant
+          </button>
+        </div>
+
+        <div class="renew-row" *ngIf="lockAllActions">
+          <div class="renew-banner" role="status" aria-live="polite">
+            <mat-icon color="warn">lock</mat-icon>
+            <span>Actions verrouillées: une demande est déjà en attente.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ </div>
+
+ <!-- Mes demandes section (direct, no tabs) -->
+ <ng-container *ngIf="!isInDetail">
+   <div class="tab-content" id="demandes">
+                <mat-card class="demandes-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <mat-icon>assignment</mat-icon>
+                            Mes demandes CEC
+                        </h3>
+                        <p class="card-subtitle">Consultez et gérez vos demandes de carte d'égalité des chances</p>
+                    </div>
+
+                    <mat-card-content>
+                        <!-- Bouton de création rapide si aucune carte -->
+                        <div class="list-actions" *ngIf="!hasCarte">
+                          <button mat-raised-button color="primary" (click)="createFirstDemande()" [disabled]="!eligibility?.canCreate || isCreatingDemande || lockAllActions || !hasDemandeManuscrite" aria-label="Créer une nouvelle demande">
+                            <mat-icon>add</mat-icon>
+                            Faire une nouvelle demande
+                          </button>
+                          <!-- Bouton pour uploader la demande manuscrite si base docs ok mais manuscrite manquante -->
+                          <ng-container *ngIf="eligibility?.canCreate && !hasDemandeManuscrite">
+                            <input type="file" accept=".pdf,.jpg,.jpeg,.png" hidden #demandeManuscriteInput (change)="onDemandeManuscriteSelected($event)" />
+                            <button mat-stroked-button color="accent" (click)="demandeManuscriteInput.click()" [disabled]="isUploadingDocument || lockAllActions" aria-label="Uploader la demande manuscrite">
+                              <mat-icon>upload_file</mat-icon>
+                              Uploader la demande manuscrite
+                            </button>
+                          </ng-container>
+                        </div>
+                        <div class="table-container" *ngIf="!isLoading; else loadingTemplate" role="region" aria-label="Tableau des demandes">
+                            <table mat-table [dataSource]="demandesFiltrees" class="demandes-table">
+
+                                <ng-container matColumnDef="numeroDemande">
+                                    <th mat-header-cell *matHeaderCellDef scope="col">Numéro</th>
+                                    <td mat-cell *matCellDef="let demande" data-label="Numéro">
+                                        <a [routerLink]="['demandes', demande.id]" class="row-link" [attr.aria-label]="'Voir la demande ' + demande.numeroDemande">
+                                            <span class="demande-badge">{{ demande.numeroDemande }}</span>
+                                        </a>
+                                    </td>
+                                </ng-container>
+
+                                <ng-container matColumnDef="type">
+                                    <th mat-header-cell *matHeaderCellDef scope="col">Type</th>
+                                    <td mat-cell *matCellDef="let demande" data-label="Type">
+                                        <mat-chip [color]="demande.type === 'nouvelle' ? 'primary' : 'accent'" selected>
+                                            {{ demande.type === 'nouvelle' ? 'Première demande' : 'Renouvellement' }}
+                                        </mat-chip>
+                                    </td>
+                                </ng-container>
+
+                                <ng-container matColumnDef="statut">
+                                    <th mat-header-cell *matHeaderCellDef scope="col">Statut</th>
+                                    <td mat-cell *matCellDef="let demande" data-label="Statut">
+              <mat-chip [color]="getStatutColor(demande.statut)" [ngClass]="'chip-' + demande.statut" selected>
+                  {{ getStatutLabel(demande.statut) }}
+              </mat-chip>
+          </td>
+                </ng-container>
+
+                                <ng-container matColumnDef="dateCreation">
+                                    <th mat-header-cell *matHeaderCellDef scope="col">Date de création</th>
+                                    <td mat-cell *matCellDef="let demande" data-label="Date de création">
+                                        {{ demande.dateCreation | date:'dd/MM/yyyy HH:mm' }}
+                                    </td>
+                                </ng-container>
+
+                                
+
+                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="clickable-row" (click)="onRowClick(row)"></tr>
+                            </table>
+
+                            <div class="no-data" *ngIf="demandes.length === 0">
+                                <mat-icon>assignment</mat-icon>
+                                <p>Aucune demande trouvée</p>
+                                <p class="subtitle">Créez votre première demande ci-dessous</p>
+                            </div>
+
+                            <!-- Pagination controls (handicap) -->
+                <div class="pagination-bar" *ngIf="pageSizeOptions.length > 1 && total > 0" role="navigation" aria-label="Pagination des demandes">
+                  <div class="pagination-left">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Par page</mat-label>
+                      <mat-select [value]="limit" (selectionChange)="changePageSize($event.value)" aria-label="Nombre d'éléments par page">
+                        <mat-option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <div class="pagination-right">
+                    <button mat-stroked-button (click)="goToFirstPage()" [disabled]="page <= 1" aria-label="Première page">
+                      <mat-icon>first_page</mat-icon>
+                    </button>
+                    <button mat-stroked-button (click)="prevPage()" [disabled]="page <= 1" aria-label="Page précédente">
+                      <mat-icon>chevron_left</mat-icon>
+                      Précédent
+                    </button>
+                    <span class="page-info" aria-live="polite">{{ pageStart }}–{{ pageEnd }} sur {{ total }}</span>
+                    <button mat-stroked-button (click)="nextPage()" [disabled]="page >= totalPages" aria-label="Page suivante">
+                      Suivant
+                      <mat-icon>chevron_right</mat-icon>
+                    </button>
+                    <button mat-stroked-button (click)="goToLastPage()" [disabled]="page >= totalPages" aria-label="Dernière page">
+                      <mat-icon>last_page</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                        </div>
+
+                        <ng-template #loadingTemplate>
+                            <div class="loading-container">
+                                <mat-spinner aria-label="Chargement des demandes"></mat-spinner>
+                                <p>Chargement des demandes...</p>
+                            </div>
+                        </ng-template>
+                    </mat-card-content>
+                </mat-card>
+   </div>
+
+   <!-- Mes documents section (direct, no tabs) -->
+   <div class="tab-content" id="documents">
+                <mat-card class="documents-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <mat-icon>folder</mat-icon>
+                            Mes documents
+                        </h3>
+                        <p class="card-subtitle">
+                            Gérez vos documents pour vos demandes CEC
+                        </p>
+                    </div>
+
+                    <mat-card-content>
+                        <!-- Zone upload (sélecteur + bouton unique) affichée uniquement s'il reste des types à ajouter -->
+                        <div class="upload-section" *ngIf="hasAddableDocTypes && !lockAllActions">
+                            <h4>Uploader un nouveau document</h4>
+
+                            <div class="upload-controls">
+                                <div class="upload-control control-select">
+                                    <mat-form-field appearance="outline" class="type-select">
+                                        <mat-label>Type de document</mat-label>
+                                        <mat-select [(value)]="selectedDocType" [disabled]="isUploadingDocument || lockAllActions">
+                                            <mat-option *ngFor="let t of allowedDocTypes" [value]="t.value" [disabled]="t.disabled">
+                                                {{ t.label }}
+                                            </mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+
+                                <div class="upload-control control-button">
+                                    <input
+                                        type="file"
+                                        #singleFileInput
+                                        (change)="onSingleFileSelected($event)"
+                                        accept=".pdf,.jpg,.jpeg,.png"
+                                        style="display:none;"
+                                    />
+
+                                    <button mat-raised-button color="primary"
+                                            (click)="singleFileInput.click()"
+                                            [disabled]="isUploadingDocument || lockAllActions || !selectedDocType"
+                                            aria-label="Sélectionner un fichier à uploader">
+                                        <mat-icon>upload</mat-icon>
+                                        Uploader
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="upload-dropzone"
+                                 *ngIf="selectedDocType"
+                                 [class.drag-active]="isDragOver"
+                                 [class.disabled]="isUploadingDocument || lockAllActions"
+                                 role="button"
+                                 tabindex="0"
+                                 aria-label="Glisser-déposer un fichier pour l'uploader"
+                                 (dragover)="onDragOver($event)"
+                                 (dragleave)="onDragLeave($event)"
+                                 (drop)="onDrop($event)">
+                                <mat-icon>file_upload</mat-icon>
+                                <span>Glissez et déposez votre fichier ici</span>
+                                <small>Formats acceptés : PDF, JPG, JPEG, PNG</small>
+                            </div>
+
+                            <div class="upload-hint" *ngIf="lockAllActions">
+                                <mat-icon color="warn">lock</mat-icon>
+                                <span>Actions verrouillées: une demande est en attente.</span>
+                            </div>
+                        </div>
+
+                        <div *ngIf="isUploadingDocument" class="upload-progress">
+                            <mat-spinner diameter="30" aria-label="Upload en cours"></mat-spinner>
+                            <p>Upload en cours...</p>
+                        </div>
+
+                        <!-- Liste des documents -->
+                        <div *ngIf="documents && documents.length > 0; else noDocs">
+                            <h4>Documents uploadés</h4>
+
+                            <table mat-table [dataSource]="documents" class="mat-elevation-z8 documents-table">
+                                <!-- Nom -->
+                                <ng-container matColumnDef="nom">
+                                    <th mat-header-cell *matHeaderCellDef>Nom</th>
+                                    <td mat-cell *matCellDef="let doc" data-label="Nom">{{ doc.nom }}</td>
+                                </ng-container>
+
+                                <!-- Type -->
+                                <ng-container matColumnDef="type">
+                                    <th mat-header-cell *matHeaderCellDef>Type</th>
+                                    <td mat-cell *matCellDef="let doc" data-label="Type">{{ prettyType(doc.typeDocument) }}</td>
+                                </ng-container>
+
+                                <!-- Date -->
+                                <ng-container matColumnDef="date">
+                                    <th mat-header-cell *matHeaderCellDef>Date</th>
+                                    <td mat-cell *matCellDef="let doc" data-label="Date">
+                                        {{ doc.dateUpload | date: 'dd/MM/yyyy HH:mm' }}
+                                    </td>
+                                </ng-container>
+
+                                <!-- Actions -->
+                                <ng-container matColumnDef="actions">
+                                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                                    <td mat-cell *matCellDef="let doc" data-label="Actions">
+                                        <button mat-button color="primary" class="download-btn" (click)="download(doc.id)" [attr.aria-label]="'Télécharger ' + (doc.nom || 'document')">
+                                            Télécharger
+                                        </button>
+                                        <input
+                                                type="file"
+                                                hidden
+                                                #replaceInput
+                                                (change)="replaceDocument($event, doc.id, doc.typeDocument)"
+                                                [disabled]="lockAllActions || doc.statut === 'valide'"
+                                        />
+                                        <button mat-button color="accent" (click)="replaceInput.click()" [disabled]="lockAllActions || doc.statut === 'valide'" [attr.aria-label]="'Remplacer ' + (doc.nom || 'document')">
+                                            Remplacer
+                                        </button>
+                                    </td>
+                                </ng-container>
+
+                                <tr mat-header-row *matHeaderRowDef="['nom','type','date','actions']"></tr>
+                                <tr mat-row *matRowDef="let row; columns: ['nom','type','date','actions']"></tr>
+                            </table>
+                        </div>
+
+                        <!-- Aucun doc -->
+                        <ng-template #noDocs>
+                            <div class="no-documents">
+                                <mat-icon>cloud_upload</mat-icon>
+                                <p>Aucun document uploadé</p>
+                                <p class="subtitle">
+                                    Utilisez les boutons ci-dessus pour ajouter vos documents
+                                </p>
+                            </div>
+                        </ng-template>
+                    </mat-card-content>
+                </mat-card>
+   </div>
+
+    </ng-container>
+
+<!-- Child route outlet for demande details -->
+<router-outlet *ngIf="isInDetail"></router-outlet>
+</div>

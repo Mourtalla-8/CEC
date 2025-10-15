@@ -1,0 +1,23 @@
+.app-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background-color: #008072;
+    color: white;
+}
+
+.spacer {
+    flex: 1 1 auto;
+}
+
+.user-info {
+    margin-right: 16px;
+    font-size: 14px;
+}
+
+.main-content {
+    flex: 1;
+}

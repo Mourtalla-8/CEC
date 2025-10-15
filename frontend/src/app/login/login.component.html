@@ -1,0 +1,114 @@
+<div class="login-container">
+  <mat-card class="login-card">
+    <div class="login-header">
+      <div mat-card-avatar class="login-avatar">
+        <mat-icon>account_circle</mat-icon>
+      </div>
+      <h2>Connexion CEC</h2>
+      <p>Carte d'Égalité des Chances</p>
+    </div>
+
+    <mat-card-content class="login-content">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input 
+            matInput 
+            type="email" 
+            formControlName="email"
+            placeholder="votre.email@exemple.com"
+            autocomplete="email"
+            aria-describedby="email-error">
+          <mat-icon matSuffix>email</mat-icon>
+          
+          <mat-error id="email-error" *ngIf="loginForm.get('email')?.hasError('required')">
+            L'email est requis
+          </mat-error>
+          <mat-error id="email-error" *ngIf="loginForm.get('email')?.hasError('email')">
+            Format d'email invalide
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mot de passe</mat-label>
+          <input 
+            matInput 
+            [type]="hidePassword ? 'password' : 'text'" 
+            formControlName="motDePasse"
+            placeholder="Votre mot de passe"
+            autocomplete="current-password"
+            aria-describedby="password-error">
+          
+          <button 
+            mat-icon-button 
+            matSuffix 
+            type="button"
+            (click)="hidePassword = !hidePassword"
+            [attr.aria-label]="hidePassword ? 'Afficher le mot de passe' : 'Masquer le mot de passe'"
+            [attr.aria-pressed]="hidePassword">
+            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+          
+          <mat-error id="password-error" *ngIf="loginForm.get('motDePasse')?.hasError('required')">
+            Le mot de passe est requis
+          </mat-error>
+        </mat-form-field>
+
+        <div *ngIf="errorMessage" class="error-message" role="alert" aria-live="polite">
+          <mat-icon>error</mat-icon>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <div *ngIf="successMessage" class="success-message" role="alert" aria-live="polite">
+          <mat-icon>check_circle</mat-icon>
+          <span>{{ successMessage }}</span>
+        </div>
+
+        <button 
+          mat-raised-button 
+          color="primary"
+          type="submit" 
+          class="login-button full-width"
+          [disabled]="loginForm.invalid || isLoading"
+          [attr.aria-label]="isLoading ? 'Connexion en cours' : 'Se connecter'">
+          
+          <mat-spinner 
+            *ngIf="isLoading" 
+            diameter="20" 
+            class="login-spinner"
+            aria-label="Chargement">
+          </mat-spinner>
+          
+          <span *ngIf="!isLoading">Se connecter</span>
+        </button>
+        
+        <button
+          mat-button
+          type="button"
+          class="forgot-password-button"
+          routerLink="/reset-password"
+          aria-label="Réinitialiser le mot de passe">
+          Mot de passe oublié ?
+        </button>
+      </form>
+    </mat-card-content>
+
+      <hr>
+
+    <mat-card-actions class="login-actions">
+      <div class="signup-section">
+        <p>Vous n'avez pas encore de compte ?</p>
+        <button
+          mat-raised-button
+          routerLink="/signup"
+          class="signup-link"
+          aria-label="Aller à la page d'inscription"
+        >
+          <mat-icon>person_add</mat-icon>
+          <span>S'inscrire</span>
+        </button>
+      </div>
+    </mat-card-actions>
+  </mat-card>
+</div>

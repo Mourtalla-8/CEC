@@ -1,0 +1,29 @@
+.shell-container { height: 100vh; }
+.shell-sidenav {
+  width: 260px;
+  border-right: 1px solid var(--border-color); }
+.brand { display: flex; align-items: center; gap: 8px; padding: 16px; font-weight: 600; }
+.shell-toolbar { position: sticky; top: 0; z-index: 100; }
+.shell-content { padding: 16px; }
+.mat-nav-list .active { background: rgba(0,0,0,0.06); }
+.mat-nav-list .active:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
+.mat-nav-list .active:focus-visible { box-shadow: 0 0 0 2px var(--primary-color); }
+.spacer { flex: 1 1 auto; }
+@media (max-width: 960px) { .shell-sidenav { width: 240px; } }
+
+/* Header navigation (handicap) */
+.toolbar-nav { display: none; gap: 8px; margin-left: 16px; }
+.toolbar-nav a.mat-mdc-button { color: #fff; opacity: 0.85; text-transform: none; font-weight: 500; }
+.toolbar-nav a.mat-mdc-button.active { opacity: 1; background: rgba(255,255,255,0.16); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.toolbar-nav a.mat-mdc-button:not(.active):hover { opacity: 1; background: rgba(255,255,255,0.10); border-radius: 8px; }
+.toolbar-nav a.mat-mdc-button .mat-icon { margin-right: 6px; }
+
+/* Show header nav on medium+ screens, show burger only on small screens */
+@media (min-width: 960px) {
+  .toolbar-nav { display: flex; }
+  .menu-toggle.md-hidden { display: none; }
+}
+@media (max-width: 959.98px) {
+  .toolbar-nav { display: none; }
+  .menu-toggle.md-hidden { display: inline-flex; }
+}

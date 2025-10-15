@@ -1,0 +1,584 @@
+.clickable-row {
+  cursor: pointer;
+}
+.demande-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.clickable-row:hover {
+  background: rgba(0,0,0,0.04);
+}
+/* Styles CSS pour le dashboard admin */
+
+/* Modern page header */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin: 0 0 var(--spacing-lg) 0;
+  background: var(--background-light);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.page-title mat-icon {
+  font-size: 36px;
+  width: 36px;
+  height: 36px;
+  color: var(--primary-color);
+}
+
+.page-title .title-icon:hover {
+  cursor: pointer;
+}
+
+.page-title h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Pointer feedback for clickable title */
+.page-title h1:hover {
+  cursor: pointer;
+}
+
+.page-title .subtitle {
+  margin: 2px 0 0 0;
+  font-size: 0.9rem;
+}
+
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.profile-panel {
+  margin: var(--spacing-md) 0 var(--spacing-lg);
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+}
+
+.profile-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.profile-row mat-icon {
+  color: var(--primary-color);
+}
+
+.muted { color: var(--text-secondary); font-size: 0.9rem; }
+
+@media (max-width: 768px) {
+  .page-header { flex-direction: column; align-items: flex-start; gap: var(--spacing-sm); }
+  .profile-grid { grid-template-columns: 1fr; }
+}
+
+/* Legacy dashboard header removed. Using .page-header instead. */
+
+/* Template de chargement */
+/*.loading-container {*/
+/*  display: flex;*/
+/*  flex-direction: column;*/
+/*  align-items: center;*/
+/*  gap: var(--spacing-md);*/
+/*  padding: var(--spacing-xl);*/
+/*  color: var(--text-secondary);*/
+/*  background: white;*/
+/*}*/
+
+
+.dashboard-container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: var(--spacing-lg);
+}
+
+/*.dashboard-header {*/
+/*  margin-bottom: var(--spacing-lg);*/
+/*}*/
+
+.welcome-card {
+  background: linear-gradient(135deg, #ff5722 0%, #e64a19 100%);
+  color: white;
+  box-shadow: 0 4px 20px rgba(255, 87, 34, 0.3);
+  border-radius: var(--border-radius);
+}
+
+.welcome-card h1,
+.welcome-card p {
+  color: white;
+  margin: 0;
+}
+
+.welcome-card h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.welcome-card p {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.admin-avatar {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.admin-avatar mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+/* Section des statistiques */
+.statistics-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.stat-card {
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.stat-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.stat-card mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+
+.stat-info h3 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.stat-info p {
+  margin: var(--spacing-xs) 0 0 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Couleurs des cartes statistiques */
+.stat-card.total {
+  border-left: 4px solid var(--primary-color);
+}
+
+.stat-card.total mat-icon {
+  color: var(--primary-color);
+}
+
+.stat-card.pending {
+  border-left: 4px solid #FFE9A6; /* en_attente chip background */
+}
+
+.stat-card.pending mat-icon {
+  color: #7A5C12;
+}
+
+.stat-card.processing {
+  border-left: 4px solid #E3F2FD; /* en_cours_traitement chip background */
+}
+
+.stat-card.processing mat-icon {
+  color: #0D47A1;
+}
+
+.stat-card.approved {
+  border-left: 4px solid #C8E6C9; /* validee chip background */
+}
+
+.stat-card.approved mat-icon {
+  color: #1B5E20;
+}
+
+.stat-card.rejected {
+  border-left: 4px solid #FFCDD2; /* rejetee chip background */
+}
+
+.stat-card.rejected mat-icon {
+  color: #B71C1C;
+}
+
+/* Carte principale des demandes */
+.demandes-card {
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+  margin-top: var(--spacing-lg);
+}
+
+.demandes-card h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  margin: 0;
+}
+
+.demandes-card p {
+  color: var(--text-secondary);
+  margin-top: var(--spacing-xs);
+  font-size: 0.875rem;
+}
+
+/* Section des filtres */
+.filters-section {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background: #f8f9fa;
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--accent-color);
+}
+
+.filters-section h3 {
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.filters-row {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.filters-row mat-form-field {
+  min-width: 200px;
+}
+
+/* New compact filters toolbar */
+.filters-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: var(--spacing-md);
+  background: #f8f9fa;
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--accent-color);
+  margin-bottom: var(--spacing-lg);
+}
+
+.filters-left {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.filters-left mat-form-field {
+  min-width: 220px;
+}
+
+.filters-right {
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .filters-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filters-right { justify-content: flex-end; }
+}
+
+/* Responsive table wrapper */
+.table-responsive {
+  overflow-x: auto;
+  margin: var(--spacing-md) 0;
+}
+
+.table-container {
+  margin-top: var(--spacing-md);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-light);
+}
+
+.demandes-table {
+  width: 100%;
+  min-width: 800px;
+  background: white;
+}
+
+/* Pagination bar layout */
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  padding: 8px 12px;
+}
+.pagination-left {
+  display: flex;
+  align-items: center;
+}
+.pagination-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto; /* push to right */
+}
+.page-info {
+  margin: 0 8px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .pagination-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .pagination-right { justify-content: flex-end; }
+}
+
+/* Zebra striping for admin demandes table (MDC + legacy) */
+.demandes-table .mat-mdc-row:nth-child(even),
+.demandes-table tbody .mat-row:nth-child(even) {
+  background-color: rgba(0,0,0,0.03);
+}
+.demandes-table .mat-mdc-row:nth-child(odd),
+.demandes-table tbody .mat-row:nth-child(odd) {
+  background-color: transparent;
+}
+
+.mat-header-cell {
+  background: var(--accent-color);
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-bottom: none;
+  padding: var(--spacing-md) var(--spacing-sm);
+}
+
+.mat-cell {
+  padding: var(--spacing-md) var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mat-row {
+  transition: background-color 0.2s ease;
+}
+
+.mat-row:hover {
+  background-color: var(--background-light);
+}
+
+/* Hover highlight for MDC rows */
+.demandes-table .mat-mdc-row:hover {
+  background-color: rgba(0,0,0,0.06);
+}
+
+.highlight-row {
+  background-color: rgba(255, 152, 0, 0.05);
+  border-left: 3px solid var(--warning-color);
+}
+
+/* Actions dans le tableau */
+.actions-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.actions-buttons button {
+  min-width: 40px;
+  height: 40px;
+}
+
+/* Styles pour les chips */
+.mat-chip {
+  font-weight: 500;
+  border-radius: 16px;
+  font-size: 0.75rem;
+}
+
+/* Status-based chip colors (admin) for MDC chips */
+.mat-mdc-standard-chip.chip-en_attente, .mat-mdc-chip.chip-en_attente, .mat-chip.chip-en_attente {
+  background: #FFE9A6 !important; /* amber 100 */
+  color: #7A5C12 !important;
+}
+.mat-mdc-standard-chip.chip-en_cours_traitement, .mat-mdc-chip.chip-en_cours_traitement, .mat-chip.chip-en_cours_traitement {
+  background: #E3F2FD !important; /* blue 50 */
+  color: #0D47A1 !important;
+}
+.mat-mdc-standard-chip.chip-validee, .mat-mdc-chip.chip-validee, .mat-chip.chip-validee {
+  background: #C8E6C9 !important; /* green 100 */
+  color: #1B5E20 !important;
+}
+.mat-mdc-standard-chip.chip-rejetee, .mat-mdc-chip.chip-rejetee, .mat-chip.chip-rejetee {
+  background: #FFCDD2 !important; /* red 100 */
+  color: #B71C1C !important;
+}
+
+/* Message aucune donnée */
+.no-data {
+  text-align: center;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  color: var(--text-secondary);
+  background: white;
+}
+
+.no-data mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #ccc;
+  margin-bottom: var(--spacing-md);
+}
+
+.no-data p {
+  margin: var(--spacing-sm) 0;
+  font-size: 1rem;
+}
+
+.subtitle {
+  font-size: 0.875rem !important;
+  color: #999 !important;
+}
+
+/* Template de chargement */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  color: var(--text-secondary);
+  background: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: var(--spacing-md);
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters-row mat-form-field {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .actions-buttons {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .demandes-table {
+    font-size: 0.75rem;
+  }
+
+  .mat-cell,
+  .mat-header-cell {
+    padding: var(--spacing-sm) var(--spacing-xs);
+  }
+
+  /* Stack admin demandes table rows on mobile */
+  .demandes-table thead { display: none; }
+  .demandes-table, .demandes-table tbody, .demandes-table tr, .demandes-table td { display: block; width: 100%; }
+  .demandes-table tr { margin-bottom: 14px; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; background: var(--background-light); box-shadow: var(--shadow-light); }
+  .demandes-table td { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--border-color); }
+  .demandes-table td:last-child { border-bottom: 0; }
+  .demandes-table td::before { content: attr(data-label); font-weight: 600; color: var(--text-secondary); margin-right: 12px; }
+  .row-link { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    padding: var(--spacing-sm);
+  }
+
+  .stat-content {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-sm);
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mat-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.stat-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Effets de survol pour les boutons d'action */
+.actions-buttons button:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}

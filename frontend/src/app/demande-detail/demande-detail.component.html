@@ -1,0 +1,198 @@
+<div class="detail-container" *ngIf="!isLoading; else loadingTpl">
+  <ng-container *ngIf="demande as d">
+    <div class="page-header">
+      <div class="title-block">
+        <span class="overline">Demande</span>
+        <h1>{{ d.numeroDemande || '—' }}</h1>
+      </div>
+      <div class="chip-group">
+        <mat-chip class="status-chip" [ngClass]="d.statut">{{ statusLabel(d.statut) }}</mat-chip>
+        <mat-chip class="type-chip" color="primary" selected>{{ typeLabel(d.type) }}</mat-chip>
+      </div>
+    </div>
+
+    <mat-card class="summary-card">
+      <div class="summary-grid">
+        <div class="item">
+          <span class="label">Créée le</span>
+          <span class="value">{{ d.dateCreation | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <div class="item" *ngIf="d.dateTraitement">
+          <span class="label">Traité le</span>
+          <span class="value">{{ d.dateTraitement | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <div class="item">
+          <span class="label">Statut</span>
+          <span class="value"><mat-chip class="status-chip" [ngClass]="d.statut">{{ statusLabel(d.statut) }}</mat-chip></span>
+        </div>
+        <div class="item">
+          <span class="label">Type de dossier</span>
+          <span class="value">{{ typeLabel(d.type) }}</span>
+        </div>
+        <div class="item" *ngIf="assignedAdminId">
+          <span class="label">Référent</span>
+          <span class="value">{{ assignedAdminId }}</span>
+        </div>
+        <div class="item motif" *ngIf="decisionNote(d)">
+          <span class="label">Motif / commentaire</span>
+          <span class="value">{{ decisionNote(d) }}</span>
+        </div>
+      </div>
+    </mat-card>
+
+    <div class="content-grid">
+      <mat-card class="info-card">
+        <h3>Informations principales</h3>
+        <dl class="info-list">
+          <div>
+            <dt>Numéro de dossier</dt>
+            <dd>{{ d.numeroDemande || '—' }}</dd>
+          </div>
+          <div>
+            <dt>Statut actuel</dt>
+            <dd><mat-chip class="status-chip" [ngClass]="d.statut">{{ statusLabel(d.statut) }}</mat-chip></dd>
+          </div>
+          <div>
+            <dt>Créée le</dt>
+            <dd>{{ d.dateCreation | date: 'dd/MM/yyyy HH:mm' }}</dd>
+          </div>
+          <div *ngIf="d.dateTraitement">
+            <dt>Dernière mise à jour</dt>
+            <dd>{{ d.dateTraitement | date: 'dd/MM/yyyy HH:mm' }}</dd>
+          </div>
+          <div *ngIf="assignedAdminId">
+            <dt>Référent actuel</dt>
+            <dd>{{ assignedAdminId }}</dd>
+          </div>
+          <div *ngIf="decisionNote(d)" class="note-row">
+            <dt>Motif / commentaire</dt>
+            <dd>{{ decisionNote(d) }}</dd>
+          </div>
+        </dl>
+      </mat-card>
+
+      <mat-card class="documents-card">
+        <div class="section-title">
+          <h3>Documents fournis</h3>
+          <span class="badge" *ngIf="documents?.length">{{ documents.length }}</span>
+        </div>
+        <div *ngIf="documents?.length; else noDocs">
+          <div class="document-list">
+            <article class="document-item" *ngFor="let doc of documents">
+              <div class="document-meta">
+                <h4>{{ doc.nom || 'Document' }}</h4>
+                <div class="meta-row">
+                  <span class="type">{{ formatDocType(doc.typeDocument) }}</span>
+                  <span class="date">{{ doc.dateUpload | date: 'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+              </div>
+              <a *ngIf="doc.url && (!isAdmin || (demande?.statut === 'en_cours_traitement' && canTakeOwnership()))"
+                 [href]="doc.url" target="_blank" rel="noopener" mat-stroked-button>
+                Ouvrir
+              </a>
+            </article>
+          </div>
+        </div>
+        <ng-template #noDocs>
+          <p class="empty-state">Aucun document attaché.</p>
+        </ng-template>
+      </mat-card>
+    </div>
+
+    <mat-card class="carte-card" *ngIf="demande?.type === 'renouvellement' && carte as c">
+      <h3>Carte CEC</h3>
+      <dl class="info-list">
+        <div>
+          <dt>Numéro</dt>
+          <dd>{{ c.numeroCarte || '—' }}</dd>
+        </div>
+        <div>
+          <dt>Date de délivrance</dt>
+          <dd>{{ c.dateDelivrance | date: 'dd/MM/yyyy' }}</dd>
+        </div>
+        <div>
+          <dt>Date d'expiration</dt>
+          <dd>{{ c.dateExpiration | date: 'dd/MM/yyyy' }}</dd>
+        </div>
+        <div>
+          <dt>Renouvellements</dt>
+          <dd>{{ c.nombreRenouvellements || 0 }}</dd>
+        </div>
+        <div *ngIf="c.dateDernierRenouvellement">
+          <dt>Dernier renouvellement</dt>
+          <dd>{{ c.dateDernierRenouvellement | date: 'dd/MM/yyyy HH:mm' }}</dd>
+        </div>
+      </dl>
+    </mat-card>
+
+    <mat-card class="history-card" *ngIf="demande?.historique?.length">
+      <h3>Historique</h3>
+      <ol class="timeline">
+        <li *ngFor="let entry of demande?.historique">
+          <span class="time">{{ entry.date | date: 'dd/MM/yyyy HH:mm' }}</span>
+          <div class="details">
+            <span class="action">{{ entry.action }}</span>
+            <span class="author" *ngIf="entry.auteur">par {{ entry.auteur }}</span>
+            <p class="info" *ngIf="entry.details">{{ entry.details }}</p>
+          </div>
+        </li>
+      </ol>
+    </mat-card>
+
+    <mat-card class="decision-card" *ngIf="showDecision">
+      <h3>{{ decisionType === 'rejetee' ? 'Rejeter la demande' : 'Valider la demande' }}</h3>
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Motif / commentaire</mat-label>
+        <textarea matInput [(ngModel)]="motif" rows="3" placeholder="Saisissez le motif"></textarea>
+      </mat-form-field>
+      <div class="decision-actions">
+        <button mat-button (click)="cancelDecision()">Annuler</button>
+        <button mat-flat-button color="primary" (click)="confirmerDecision()" [disabled]="isUpdating || (decisionType==='rejetee' && !motif)">
+          Confirmer
+        </button>
+      </div>
+    </mat-card>
+  </ng-container>
+
+  <div class="actions-bar" *ngIf="demande as d">
+    <div class="actions-left">
+      <button mat-stroked-button color="primary" (click)="goBack()" aria-label="Revenir en arrière">
+        <mat-icon>arrow_back</mat-icon>
+        Retour
+      </button>
+    </div>
+    <div class="actions-right">
+      <ng-container *ngIf="isAdmin">
+        <button *ngIf="d?.statut === 'en_attente'" mat-raised-button color="accent" (click)="startOrResume()" [disabled]="isUpdating || !canTakeOwnership()" aria-label="Démarrer ou reprendre le traitement">
+          <mat-icon>play_arrow</mat-icon>
+          {{ startResumeLabel() }}
+        </button>
+        <button *ngIf="d?.statut === 'en_cours_traitement' && canTakeOwnership()" mat-stroked-button color="primary" (click)="downloadZip()" aria-label="Télécharger les pièces jointes en ZIP">
+          <mat-icon>archive</mat-icon>
+          Télécharger (.zip)
+        </button>
+        <button mat-raised-button color="primary" (click)="showValidation()" [disabled]="isUpdating || d?.statut !== 'en_cours_traitement' || !canTakeOwnership()" aria-label="Valider la demande">
+          <mat-icon>check</mat-icon>
+          Valider
+        </button>
+        <button mat-raised-button color="warn" (click)="showRejet()" [disabled]="isUpdating || d?.statut !== 'en_cours_traitement' || !canTakeOwnership()" aria-label="Rejeter la demande">
+          <mat-icon>close</mat-icon>
+          Rejeter
+        </button>
+      </ng-container>
+      <ng-container *ngIf="isHandicap">
+        <button mat-stroked-button color="warn" (click)="cancelDemande()" [disabled]="!canCancel() || isUpdating" aria-label="Annuler la demande">
+          <mat-icon>delete</mat-icon>
+          Annuler la demande
+        </button>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="loading">
+    <mat-spinner></mat-spinner>
+    <p>Chargement...</p>
+  </div>
+</ng-template>

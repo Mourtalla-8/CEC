@@ -1,0 +1,271 @@
+<!-- Template HTML pour le dashboard admin -->
+<div class="dashboard-container">
+    <!-- En-tête moderne de page -->
+    <div class="page-header" aria-label="En-tête du tableau de bord administrateur">
+        <div class="page-title">
+            <mat-icon class="title-icon" (click)="refreshPage()" (keydown.enter)="refreshPage()" (keydown.space)="refreshPage()" role="link" tabindex="0">admin_panel_settings</mat-icon>
+            <div>
+                <h1 (click)="refreshPage()" role="link" tabindex="0">Dashboard Administrateur | {{ (profile?.prenom || currentUser?.prenom) || 'Admin' }} {{ (profile?.nom || currentUser?.nom) || '' }}</h1>
+                <p class="subtitle">Suivi des demandes CEC et statistiques globales</p>
+            </div>
+        </div>
+        <div class="page-actions">
+            <button mat-stroked-button color="primary" (click)="toggleProfile()" [attr.aria-expanded]="showProfile" [attr.aria-controls]="'admin-profile-panel'">
+                <mat-icon>person</mat-icon>
+                Profil
+            </button>
+            <button mat-stroked-button color="warn" (click)="logout()">
+                <mat-icon>logout</mat-icon>
+                Déconnexion
+            </button>
+        </div>
+    </div>
+
+    <!-- Profil collapsible panel -->
+    <mat-card *ngIf="showProfile" id="admin-profile-panel" class="profile-panel" aria-live="polite">
+        <mat-card-content>
+            <div class="profile-grid">
+                <div class="profile-row">
+                    <mat-icon>person</mat-icon>
+                    <div>
+                        <strong>{{ currentUser?.prenom || 'Administrateur' }} {{ currentUser?.nom || '' }}</strong>
+                        <div class="muted">{{ profile?.email || currentUser?.email }}</div>
+                    </div>
+                </div>
+            </div>
+        </mat-card-content>
+    </mat-card>
+    <!-- Statistiques -->
+    <div class="statistics-section">
+        <div class="stats-grid">
+            <mat-card class="stat-card total">
+                <mat-card-content>
+                    <div class="stat-content">
+                        <mat-icon>assignment</mat-icon>
+                        <div class="stat-info">
+                            <h3>{{ statistiques.total }}</h3>
+                            <p>Total demandes</p>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+            <mat-card class="stat-card pending">
+                <mat-card-content>
+                    <div class="stat-content">
+                        <mat-icon>schedule</mat-icon>
+                        <div class="stat-info">
+                            <h3>{{ statistiques.enAttente }}</h3>
+                            <p>En attente</p>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+            <mat-card class="stat-card processing">
+                <mat-card-content>
+                    <div class="stat-content">
+                        <mat-icon>hourglass_empty</mat-icon>
+                        <div class="stat-info">
+                            <h3>{{ statistiques.enCours }}</h3>
+                            <p>En cours</p>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+            <mat-card class="stat-card approved">
+                <mat-card-content>
+                    <div class="stat-content">
+                        <mat-icon>check_circle</mat-icon>
+                        <div class="stat-info">
+                            <h3>{{ statistiques.validees }}</h3>
+                            <p>Validées</p>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+            <mat-card class="stat-card rejected">
+                <mat-card-content>
+                    <div class="stat-content">
+                        <mat-icon>cancel</mat-icon>
+                        <div class="stat-info">
+                            <h3>{{ statistiques.rejetees }}</h3>
+                            <p>Rejetées</p>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </div>
+
+    <!-- Visualisation des stats (ApexCharts) -->
+    <div class="statistics-charts" aria-label="Visualisation des statistiques">
+        <app-admin-stats [stats]="statistiques"></app-admin-stats>
+    </div>
+
+    <!-- Contenu principal -->
+    <mat-card class="demandes-card" *ngIf="!isInDetail">
+        <mat-card-header>
+            <h2 class="mat-card-title">
+                <mat-icon>list</mat-icon>
+                Gestion des demandes CEC
+            </h2>
+        </mat-card-header>
+
+        <mat-card-content>
+            <!-- Barre d'outils des filtres -->
+            <div class="filters-toolbar" role="toolbar" aria-label="Filtres de la liste des demandes">
+                <div class="filters-left">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Statut</mat-label>
+                        <mat-select [(value)]="filtreStatut" (selectionChange)="onFiltreChange()" aria-label="Filtrer par statut">
+                            <mat-option value="">Tous les statuts</mat-option>
+                            <mat-option value="en_attente">En attente</mat-option>
+                            <mat-option value="en_cours_traitement">En cours</mat-option>
+                            <mat-option value="validee">Validée</mat-option>
+                            <mat-option value="rejetee">Rejetée</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Type</mat-label>
+                        <mat-select [(value)]="filtreType" (selectionChange)="onFiltreChange()" aria-label="Filtrer par type de demande">
+                            <mat-option value="">Tous les types</mat-option>
+                            <mat-option value="nouvelle">Première demande</mat-option>
+                            <mat-option value="renouvellement">Renouvellement</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <div class="filters-right">
+                    <button mat-stroked-button color="primary" (click)="resetFiltres()" aria-label="Réinitialiser les filtres">
+                        <mat-icon>clear</mat-icon>
+                        Réinitialiser
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tableau des demandes -->
+            <div class="table-container" *ngIf="!isLoading; else loadingTemplate">
+                <div class="table-responsive">
+                    <table mat-table [dataSource]="demandesFiltrees" class="demandes-table" role="table" aria-label="Tableau des demandes CEC">
+
+                        <!-- Colonne Numéro -->
+                        <ng-container matColumnDef="numeroDemande">
+                            <th mat-header-cell *matHeaderCellDef scope="col">Numéro</th>
+                            <td mat-cell *matCellDef="let demande" data-label="Numéro">
+                                <a [routerLink]="['demandes', demande.id]" class="row-link" [attr.aria-label]="'Voir la demande ' + demande.numeroDemande">
+                                  <span class="demande-badge">{{ demande.numeroDemande }}</span>
+                                </a>
+                            </td>
+                        </ng-container>
+
+                        <!-- Colonne Propriétaire -->
+                        <ng-container matColumnDef="proprietaire">
+                            <th mat-header-cell *matHeaderCellDef scope="col">Demandeur</th>
+                            <td mat-cell *matCellDef="let demande" data-label="Demandeur">
+                                {{ getProprietaireNom(demande) }}
+                            </td>
+                        </ng-container>
+
+                        <!-- Colonne Type -->
+                        <ng-container matColumnDef="type">
+                            <th mat-header-cell *matHeaderCellDef scope="col">Type</th>
+                            <td mat-cell *matCellDef="let demande" data-label="Type">
+                                <mat-chip [color]="demande.type === 'nouvelle' ? 'primary' : 'accent'" selected>
+                                    {{ demande.type === 'nouvelle' ? 'Nouvelle' : 'Renouvellement' }}
+                                </mat-chip>
+                            </td>
+                        </ng-container>
+
+                        <!-- Colonne Statut -->
+                        <ng-container matColumnDef="statut">
+                            <th mat-header-cell *matHeaderCellDef scope="col">Statut</th>
+                            <td mat-cell *matCellDef="let demande" data-label="Statut">
+                                <mat-chip [color]="getStatutColor(demande.statut)" [ngClass]="'chip-' + demande.statut" selected>
+                                    {{ getStatutLabel(demande.statut) }}
+                                </mat-chip>
+                            </td>
+                        </ng-container>
+
+                        <!-- Colonne Date -->
+                        <ng-container matColumnDef="dateCreation">
+                            <th mat-header-cell *matHeaderCellDef scope="col">Date</th>
+                            <td mat-cell *matCellDef="let demande" data-label="Date">
+                                {{ demande.dateCreation | date:'dd/MM/yyyy HH:mm' }}
+                            </td>
+                        </ng-container>
+
+                        
+
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns" sticky></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                            class="clickable-row"
+                            (click)="onRowClick(row)"
+                            [class.highlight-row]="row.statut === 'en_attente'"></tr>
+                    </table>
+                </div>
+
+                <!-- Message si aucune demande -->
+                <div class="no-data" *ngIf="demandesFiltrees.length === 0">
+                    <mat-icon>assignment</mat-icon>
+                    <p>Aucune demande trouvée</p>
+                    <p class="subtitle">Les demandes apparaîtront ici une fois créées</p>
+                </div>
+
+                <!-- Pagination controls -->
+              <div class="pagination-bar" *ngIf="pageSizeOptions.length > 1 && total > 0" role="navigation" aria-label="Pagination des demandes">
+                <div class="pagination-left">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Par page</mat-label>
+                    <mat-select [value]="limit" (selectionChange)="changePageSize($event.value)" aria-label="Nombre d'éléments par page">
+                      <mat-option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                <div class="pagination-right">
+                  <button mat-stroked-button (click)="goToFirstPage()" [disabled]="page <= 1" aria-label="Première page">
+                    <mat-icon>first_page</mat-icon>
+                  </button>
+                  <button mat-stroked-button (click)="prevPage()" [disabled]="page <= 1" aria-label="Page précédente">
+                    <mat-icon>chevron_left</mat-icon>
+                    Précédent
+                  </button>
+                  <span class="page-info" aria-live="polite">{{ pageStart }}–{{ pageEnd }} sur {{ total }}</span>
+                  <button mat-stroked-button (click)="nextPage()" [disabled]="page >= totalPages" aria-label="Page suivante">
+                    Suivant
+                    <mat-icon>chevron_right</mat-icon>
+                  </button>
+                  <button mat-stroked-button (click)="goToLastPage()" [disabled]="page >= totalPages" aria-label="Dernière page">
+                    <mat-icon>last_page</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Template de chargement -->
+            <ng-template #loadingTemplate>
+                <div class="loading-container">
+                    <mat-spinner aria-label="Chargement des demandes"></mat-spinner>
+                    <p>Chargement des demandes...</p>
+                </div>
+            </ng-template>
+        </mat-card-content>
+    </mat-card>
+
+
+    <!-- Child routes (demande details) -->
+    <router-outlet *ngIf="isInDetail"></router-outlet>
+
+<!--    <mat-card-content>-->
+<!--        &lt;!&ndash; Template de chargement &ndash;&gt;-->
+<!--        <ng-template #loadingTemplate>-->
+<!--            <div class="loading-container">-->
+<!--                <mat-spinner aria-label="Chargement des demandes"></mat-spinner>-->
+<!--                <p>Chargement des demandes...</p>-->
+<!--            </div>-->
+<!--        </ng-template>-->
+<!--    </mat-card-content>-->
+</div>
