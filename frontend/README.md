@@ -205,7 +205,7 @@ component-name/
 
 ## 🤝 Contribution
 - Cheikh Dieng
-- Tanji,
+- Tanji (me),
 - ..........😂........
 
 ---
