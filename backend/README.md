@@ -203,7 +203,7 @@ Le serveur affiche des logs détaillés :
 5. **Permissions** : Middleware d'autorisation
 
 ## 🤝 Contribution
-- tanji
+- tanji (me)
 - ..........😂........
 
 ---
