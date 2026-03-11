@@ -104,7 +104,7 @@ L'application sera accessible sur `http://localhost:4200` et l'API sur `http://l
 ---
 
 ## 👥 Équipe de Développement
-- **Développeurs** : Tanji, Cheikh Dieng.
+- **Développeurs** : Mourtalla Toure, Cheikh Dieng.
 - **Contact** : touremourtalla841@gmail.com
 
 ---
