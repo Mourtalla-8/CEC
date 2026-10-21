@@ -122,7 +122,7 @@ server.listen(PORT, () => {
   console.log(`
 🚀 Serveur CEC Backend démarré avec succès!
 📡 Port: ${PORT}
-🗄️  Base de données: ${process.env.MONGODB_URI}
+🗄️  Base de données: ${(process.env.MONGODB_URI || '').replace(/\/\/[^@/]*@/, '//***@')}
 🌐 CORS autorisé pour: http://localhost:4200
 💬 Socket.IO activé pour les notifications temps réel
   `);
