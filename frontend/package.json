@@ -8,15 +8,15 @@
     "build": "ng build"
   },
   "dependencies": {
-    "@angular/animations": "^20.0.0",
-    "@angular/cdk": "^20.0.0",
-    "@angular/common": "^20.0.0",
-    "@angular/compiler": "^20.0.0",
-    "@angular/core": "^20.0.0",
-    "@angular/forms": "^20.0.0",
-    "@angular/material": "^20.0.0",
-    "@angular/platform-browser": "^20.0.0",
-    "@angular/router": "^20.0.0",
+    "@angular/animations": "^22.2.3",
+    "@angular/cdk": "^22.2.3",
+    "@angular/common": "^22.2.3",
+    "@angular/compiler": "^22.2.3",
+    "@angular/core": "^22.2.3",
+    "@angular/forms": "^22.2.3",
+    "@angular/material": "^22.2.3",
+    "@angular/platform-browser": "^22.2.3",
+    "@angular/router": "^22.2.3",
     "apexcharts": "~5.15.2",
     "lucide-angular": "^0.545.0",
     "ng-apexcharts": "^2.0.3",
@@ -27,9 +27,9 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular/build": "^20.0.0",
-    "@angular/cli": "^20.0.0",
-    "@angular/compiler-cli": "^20.0.0",
+    "@angular/build": "^22.2.3",
+    "@angular/cli": "^22.2.3",
+    "@angular/compiler-cli": "^22.2.3",
     "@types/node": "^20.11.0",
     "typescript": "^5.8.2"
   },
