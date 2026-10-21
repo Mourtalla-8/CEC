@@ -1,0 +1,16 @@
+$kind: collection
+description: |-
+  Scénario complet : un usager se connecte et crée une demande, puis un admin la liste, la prend en charge et la valide (ce qui crée la carte CEC).
+
+  À lancer dans l'ordre (Runner). Prérequis : l'usager a déposé ses pièces justificatives et n'a ni demande en cours ni carte.
+
+  Variables : baseUrl, identifiants de test, puis tokenHandicap, tokenAdmin et demandeId, remplies automatiquement par les scripts de test.
+variables:
+  baseUrl: http://localhost:5000
+  emailHandicap: test@test.com
+  motDePasseHandicap: ""
+  emailAdmin: admin@test.com
+  motDePasseAdmin: ""
+  tokenHandicap: ""
+  tokenAdmin: ""
+  demandeId: ""

@@ -1,0 +1,22 @@
+$kind: http-request
+description: Rôle handicap requis. type = nouvelle | renouvellement (ancienneCarte requis pour un renouvellement). Stocke data.id dans {{demandeId}}.
+url: "{{baseUrl}}/api/demandes"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenHandicap}}
+body:
+  type: text
+  content: |-
+    {
+      "type": "nouvelle"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('201 Created', () => pm.response.to.have.status(201));
+      const body = pm.response.json();
+      pm.test('statut en_attente', () => pm.expect(body.data.statut).to.eql('en_attente'));
+      pm.environment.set('demandeId', body.data.id);
+    language: text/javascript
+order: 2000

@@ -1,0 +1,19 @@
+name: CEC - Local
+values:
+  - key: baseUrl
+    value: ''
+  - key: emailHandicap
+    value: ''
+  - key: motDePasseHandicap
+    value: ''
+  - key: emailAdmin
+    value: ''
+  - key: motDePasseAdmin
+    value: ''
+  - key: tokenHandicap
+    value: ''
+  - key: tokenAdmin
+    value: ''
+  - key: demandeId
+    value: ''
+color: 240

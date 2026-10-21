@@ -1,0 +1,22 @@
+$kind: http-request
+description: Connexion unifiée. Le rôle est déduit par le serveur. Stocke data.token dans {{tokenHandicap}}.
+url: "{{baseUrl}}/api/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "{{emailHandicap}}",
+      "motDePasse": "{{motDePasseHandicap}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('200 OK', () => pm.response.to.have.status(200));
+      const body = pm.response.json();
+      pm.test('rôle handicap', () => pm.expect(body.data.user.role).to.eql('handicap'));
+      pm.environment.set('tokenHandicap', body.data.token);
+    language: text/javascript
+order: 1000

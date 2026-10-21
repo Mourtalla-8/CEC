@@ -1,0 +1,32 @@
+$kind: http-request
+description: Rôle admin requis. Liste paginée + statistiques par statut.
+url: "{{baseUrl}}/api/demandes?statut=en_attente&type=tous&page=1&limit=10"
+method: GET
+headers:
+  Authorization: Bearer {{tokenAdmin}}
+queryParams:
+  - key: statut
+    value: en_attente
+    description: tous | en_attente | en_cours_traitement | validee | rejetee
+  - key: type
+    value: tous
+    description: tous | nouvelle | renouvellement
+  - key: page
+    value: "1"
+  - key: limit
+    value: "10"
+  - key: search
+    value: ""
+    disabled: true
+    description: Numéro de demande, nom, prénom ou email
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('200 OK', () => pm.response.to.have.status(200));
+      const body = pm.response.json();
+      pm.test('la demande créée est listée', () => {
+        const ids = body.data.demandes.map(d => d.id);
+        pm.expect(ids).to.include(pm.variables.get('demandeId'));
+      });
+    language: text/javascript
+order: 4000

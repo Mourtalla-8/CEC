@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{baseUrl}}/api/demandes"
+method: GET
+headers:
+  Authorization: Bearer {{tokenHandicap}}
+scripts:
+  - type: afterResponse
+    code: pm.test('403', () => pm.response.to.have.status(403));
+    language: text/javascript
+order: 4000

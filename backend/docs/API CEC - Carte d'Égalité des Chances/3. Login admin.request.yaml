@@ -1,0 +1,22 @@
+$kind: http-request
+description: Admin créé par `npm run seed`. Stocke data.token dans {{tokenAdmin}}.
+url: "{{baseUrl}}/api/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "{{emailAdmin}}",
+      "motDePasse": "{{motDePasseAdmin}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('200 OK', () => pm.response.to.have.status(200));
+      const body = pm.response.json();
+      pm.test('rôle admin', () => pm.expect(body.data.user.role).to.eql('admin'));
+      pm.environment.set('tokenAdmin', body.data.token);
+    language: text/javascript
+order: 3000

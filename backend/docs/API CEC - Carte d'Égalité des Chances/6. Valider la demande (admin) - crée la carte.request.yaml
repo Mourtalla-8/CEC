@@ -1,0 +1,22 @@
+$kind: http-request
+description: 'Pour une demande de type nouvelle : crée la carte CEC (valable 1 an). Pour rejeter : {"statut": "rejetee", "motifRejet": "..."}.'
+url: "{{baseUrl}}/api/demandes/{{demandeId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenAdmin}}
+body:
+  type: text
+  content: |-
+    {
+      "statut": "validee"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('200 OK', () => pm.response.to.have.status(200));
+      const res = pm.response.json().data;
+      pm.test('statut validee', () => pm.expect(res.statut).to.eql('validee'));
+      pm.test('dateTraitement renseignée', () => pm.expect(res.dateTraitement).to.be.a('string'));
+    language: text/javascript
+order: 6000
