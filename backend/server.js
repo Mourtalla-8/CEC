@@ -10,6 +10,7 @@ require('dotenv').config(); // Pour charger les variables d'environnement
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
+const swaggerUi = require('swagger-ui-express');
 
 const socketManager = require('./services/socketManager');
 
@@ -76,6 +77,18 @@ app.use('/api/demandes', demandeRoutes);
 
 // Routes d'upload de documents
 app.use('/api/upload', uploadRoutes);
+
+// Spec générée automatiquement (npm run docs:auto), servie sur /api-docs-auto.
+// Déclarée avant /api-docs : chaque setup() de swagger-ui-express écrase le précédent pour swaggerUi.serve
+let swaggerAutoDocument = null;
+try { swaggerAutoDocument = require('./docs/openapi.auto.json'); } catch (e) { /* pas encore générée */ }
+if (swaggerAutoDocument) {
+  app.use('/api-docs-auto', swaggerUi.serveFiles(swaggerAutoDocument), swaggerUi.setup(swaggerAutoDocument));
+}
+
+// Documentation de l'API (Swagger UI), à déclarer avant le middleware 404
+const swaggerDocument = require('./docs/openapi.json');
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Exporter io via le gestionnaire (déjà accessible via socketManager.getIo())
 
