@@ -1,0 +1,1127 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API CEC - Carte d'Égalité des Chances",
+    "version": "1.0.0",
+    "description": "API REST du projet CEC (Node.js, Express, MongoDB).  \nUn usager (rôle `handicap`) dépose une demande de carte; un administrateur  \n(rôle `admin`) la traite puis la valide, ce qui crée la carte CEC.\n\nCette documentation couvre 4 routes représentatives. Les exemples sont des  \nréponses réelles capturées sur l'API en local.\n\n**Authentification** : `POST /api/auth/login` renvoie un JWT valable 24 h.  \nIl s'envoie ensuite dans l'en-tête `Authorization: Bearer` .\n\n**Format des réponses** : toujours un objet JSON avec `success` (booléen),  \net selon le cas `message` et/ou `data`.",
+    "contact": {
+      "name": "Mourtalla TOURE",
+      "email": "touremourtalla841@gmail.com"
+    },
+    "license": { "name": "MIT", "url": "https://opensource.org/licenses/MIT" }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Développement local"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentification",
+      "description": "Connexion unifiée admin / usager"
+    },
+    {
+      "name": "Demandes",
+      "description": "Cycle de vie d'une demande de carte CEC"
+    }
+  ],
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Authentification"
+        ],
+        "summary": "Se connecter (admin ou usager)",
+        "description": "Connexion unique pour les deux rôles. Le serveur cherche d'abord l'email\nparmi les admins, puis parmi les usagers (`handicap`), et déduit le rôle.\nLe token JWT contient `userId`, `email` et `role`, et expire après 24 h.\n\nCette route ne renvoie jamais 404 : un email inconnu donne 401, comme un\nmauvais mot de passe, pour ne pas révéler quels comptes existent.\n",
+        "operationId": "login",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              },
+              "examples": {
+                "usager": {
+                  "summary": "Connexion d'un usager",
+                  "value": {
+                    "email": "test@test.com",
+                    "motDePasse": "MotDePasse@123"
+                  }
+                },
+                "admin": {
+                  "summary": "Connexion de l'admin créé par npm run seed",
+                  "value": {
+                    "email": "admin@test.com",
+                    "motDePasse": "MotDePasse@123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Connexion réussie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "Connexion réussie en tant que handicap",
+                  "data": {
+                    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YWM5NTdmYzMxODRiNWUyZjJiNzI3YmIiLCJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJyb2xlIjoiaGFuZGljYXAiLCJpYXQiOjE3OTE1ODAyNDEsImV4cCI6MTc5MTY2NjY0MX0.mraGseshIbFqPCbB0mMmOcihoaw9IGGbBCGJsGuN08I",
+                    "user": {
+                      "id": "6ac957fc3184b5e2f2b727bb",
+                      "email": "test@test.com",
+                      "role": "handicap",
+                      "nom": "Test",
+                      "prenom": "Test",
+                      "derniereConnexion": "2026-10-09T21:10:41.854Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Email ou mot de passe absent du corps",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Email et mot de passe requis"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Email inconnu, mot de passe faux ou compte suspendu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Email ou mot de passe incorrect"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur inattendue (base de données, etc.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Erreur lors de la connexion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/demandes": {
+      "post": {
+        "tags": [
+          "Demandes"
+        ],
+        "summary": "Créer une demande de carte (usager)",
+        "description": "Réservé au rôle `handicap`. Contrôles effectués, dans l'ordre :\n1. `type` vaut `nouvelle` ou `renouvellement`.\n2. L'usager n'a pas déjà une demande `en_attente` ou `en_cours_traitement`.\n3. Pour un renouvellement : `ancienneCarte` est fourni et correspond à une\n   carte de l'usager.\n4. Cohérence : `nouvelle` impossible si l'usager a déjà une carte,\n   `renouvellement` impossible s'il n'en a pas, et un renouvellement n'est\n   permis que si la carte expire dans moins de 3 mois (sauf certificat de perte).\n5. Toutes les pièces obligatoires ont été déposées (via `POST /api/upload/document`).\n   Majeur : `cni_recto` + `cni_verso` ; mineur : `extrait_naissance`.\n   `demande_manuscrite` pour une première demande, `certificat_perte` pour\n   un renouvellement.\n\nLe numéro de demande a la forme `SN-AAAAMM-XXXXXX`. La demande créée a le statut `en_attente`.\n",
+        "operationId": "creerDemande",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreerDemandeRequest"
+              },
+              "examples": {
+                "nouvelle": {
+                  "summary": "Première demande",
+                  "value": {
+                    "type": "nouvelle"
+                  }
+                },
+                "renouvellement": {
+                  "summary": "Renouvellement d'une carte existante",
+                  "value": {
+                    "type": "renouvellement",
+                    "ancienneCarte": {
+                      "numero": "CEC-202610-242420",
+                      "dateExpiration": "2027-10-09"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Demande créée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreerDemandeResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "Demande créée avec succès",
+                  "data": {
+                    "id": "6ac958513184b5e2f2b7283f",
+                    "numeroDemande": "SN-202610-241993",
+                    "type": "nouvelle",
+                    "statut": "en_attente",
+                    "dateCreation": "2026-10-09T21:10:41.992Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Données invalides ou règle métier non respectée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "typeInvalide": {
+                    "summary": "Type absent ou inconnu",
+                    "value": {
+                      "success": false,
+                      "message": "Type de demande requis (nouvelle ou renouvellement)"
+                    }
+                  },
+                  "demandeEnCours": {
+                    "summary": "Une demande est déjà en cours",
+                    "value": {
+                      "success": false,
+                      "message": "Vous avez déjà une demande en cours",
+                      "demandeExistante": {
+                        "numero": "SN-202610-241993",
+                        "statut": "en_attente"
+                      }
+                    }
+                  },
+                  "carteDejaExistante": {
+                    "summary": "Première demande alors que l'usager a déjà une carte",
+                    "value": {
+                      "success": false,
+                      "message": "Vous avez déjà une carte valide. Seul le renouvellement est permis."
+                    }
+                  },
+                  "aucuneCarte": {
+                    "summary": "Renouvellement alors que l'usager n'a pas de carte",
+                    "value": {
+                      "success": false,
+                      "message": "Aucune carte existante. Vous devez faire une première demande."
+                    }
+                  },
+                  "renouvellementTropTot": {
+                    "summary": "La carte expire dans plus de 3 mois",
+                    "value": {
+                      "success": false,
+                      "message": "Le renouvellement est autorisé uniquement si la carte expire dans moins de 3 mois"
+                    }
+                  },
+                  "ancienneCarteManquante": {
+                    "summary": "Renouvellement sans informations de carte",
+                    "value": {
+                      "success": false,
+                      "message": "Informations de l'ancienne carte requises pour un renouvellement"
+                    }
+                  },
+                  "documentsManquants": {
+                    "summary": "Pièces justificatives manquantes",
+                    "value": {
+                      "success": false,
+                      "message": "Documents obligatoires manquants",
+                      "missingDocuments": [
+                        "photo_identite_1",
+                        "photo_identite_2",
+                        "certificat_residence",
+                        "certificat_invalidite",
+                        "justificatif_domicile",
+                        "cni_recto",
+                        "cni_verso",
+                        "demande_manuscrite"
+                      ],
+                      "requiredDocuments": [
+                        "photo_identite_1",
+                        "photo_identite_2",
+                        "certificat_residence",
+                        "certificat_invalidite",
+                        "justificatif_domicile",
+                        "cni_recto",
+                        "cni_verso"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "L'utilisateur connecté n'a pas le rôle `handicap`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Accès refusé. Compte utilisateur handicap requis."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Renouvellement - aucune carte de l'usager ne porte ce numéro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Carte CEC introuvable pour ce numéro"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur inattendue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Erreur lors de la création de la demande"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Demandes"
+        ],
+        "summary": "Lister toutes les demandes (admin)",
+        "description": "Réservé au rôle `admin`. Résultats triés du plus récent au plus ancien,\navec pagination et statistiques globales par statut.\n\nUne demande `en_cours_traitement` assignée à un autre admin n'apparaît pas\ndans la liste.\n\nPas de réponse 400 ni 404 : des filtres sans résultat renvoient une liste\nvide avec un code 200.\n",
+        "operationId": "listerToutesLesDemandes",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "statut",
+            "in": "query",
+            "description": "Filtre par statut (`tous` = pas de filtre)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "tous",
+                "en_attente",
+                "en_cours_traitement",
+                "validee",
+                "rejetee"
+              ]
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Filtre par type (`tous` = pas de filtre)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "tous",
+                "nouvelle",
+                "renouvellement"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Numéro de page, à partir de 1",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Nombre de demandes par page",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 10
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Recherche insensible à la casse dans le numéro de demande, et dans le\nnom, le prénom ou l'email du demandeur.\n",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Test"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste paginée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListeDemandesResponse"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "demandes": [
+                      {
+                        "id": "6ac958513184b5e2f2b7283f",
+                        "numeroDemande": "SN-202610-241993",
+                        "type": "nouvelle",
+                        "statut": "en_attente",
+                        "dateCreation": "2026-10-09T21:10:41.992Z",
+                        "proprietaire": {
+                          "id": "6ac957fc3184b5e2f2b727bb",
+                          "prenom": "Test",
+                          "nom": "Test",
+                          "email": "test@test.com",
+                          "telephone": "770000000"
+                        },
+                        "assignedAdmin": null,
+                        "commentairesAdmin": ""
+                      }
+                    ],
+                    "pagination": {
+                      "page": 1,
+                      "limit": 10,
+                      "total": 1,
+                      "pages": 1
+                    },
+                    "stats": {
+                      "total": 1,
+                      "en_attente": 1,
+                      "en_cours_traitement": 0,
+                      "validee": 0,
+                      "rejetee": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "L'utilisateur connecté n'a pas le rôle `admin`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Accès refusé. Droits administrateur requis."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur inattendue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Erreur lors de la récupération des demandes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/demandes/{id}": {
+      "put": {
+        "tags": [
+          "Demandes"
+        ],
+        "summary": "Modifier une demande (traitement admin ou correction usager)",
+        "description": "Le comportement dépend du rôle de l'appelant.\n\n**Admin** : peut changer `statut`, `commentairesAdmin` et `motifRejet`.\n- Passer à `en_cours_traitement` assigne la demande à l'admin. Si un autre\n  admin la traite déjà, la réponse est 403.\n- Passer à `rejetee` exige un `motifRejet`.\n- Passer à `validee` sur une demande `nouvelle` **crée la carte CEC**\n  (numéro `CEC-AAAAMM-XXXXXX`, valable 1 an). Sur un `renouvellement`,\n  la carte existante est prolongée d'un an.\n\n**Usager (`handicap`)** : uniquement sur sa propre demande, et seulement\ntant qu'elle est `en_attente`. Champs modifiables : `type` et `ancienneCarte`.\n\nUne demande qui appartient à un autre usager donne 404, pas 403 : on ne\nrévèle pas qu'elle existe.\n",
+        "operationId": "modifierDemande",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Identifiant MongoDB (ObjectId) de la demande",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            },
+            "example": "6ac958513184b5e2f2b7283f"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ModifierDemandeAdminRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ModifierDemandeUsagerRequest"
+                  }
+                ]
+              },
+              "examples": {
+                "adminPrendreEnCharge": {
+                  "summary": "Admin - démarrer le traitement",
+                  "value": {
+                    "statut": "en_cours_traitement",
+                    "commentairesAdmin": "Dossier complet, traitement démarré"
+                  }
+                },
+                "adminValider": {
+                  "summary": "Admin - valider (crée la carte CEC)",
+                  "value": {
+                    "statut": "validee"
+                  }
+                },
+                "adminRejeter": {
+                  "summary": "Admin - rejeter (motif obligatoire)",
+                  "value": {
+                    "statut": "rejetee",
+                    "motifRejet": "Certificat d'invalidité illisible"
+                  }
+                },
+                "usagerRenouvellement": {
+                  "summary": "Usager - préciser l'ancienne carte",
+                  "value": {
+                    "ancienneCarte": {
+                      "numero": "CEC-202610-242420",
+                      "dateExpiration": "2027-10-09"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Demande modifiée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModifierDemandeResponse"
+                },
+                "examples": {
+                  "validee": {
+                    "summary": "Après validation par l'admin",
+                    "value": {
+                      "success": true,
+                      "message": "Demande modifiée avec succès",
+                      "data": {
+                        "id": "6ac958513184b5e2f2b7283f",
+                        "numeroDemande": "SN-202610-241993",
+                        "statut": "validee",
+                        "dateDerniereModification": "2026-10-09T21:10:42.414Z",
+                        "dateTraitement": "2026-10-09T21:10:42.414Z"
+                      }
+                    }
+                  },
+                  "enCours": {
+                    "summary": "Après prise en charge",
+                    "value": {
+                      "success": true,
+                      "message": "Demande modifiée avec succès",
+                      "data": {
+                        "id": "6ac958513184b5e2f2b7283f",
+                        "numeroDemande": "SN-202610-241993",
+                        "statut": "en_cours_traitement",
+                        "dateDerniereModification": "2026-10-09T21:10:42.346Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Identifiant ou données invalides, ou demande plus modifiable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "idInvalide": {
+                    "summary": "L'id n'est pas un ObjectId",
+                    "value": {
+                      "success": false,
+                      "message": "ID de la demande invalide"
+                    }
+                  },
+                  "statutInvalide": {
+                    "summary": "Statut inconnu (admin)",
+                    "value": {
+                      "success": false,
+                      "message": "Statut invalide"
+                    }
+                  },
+                  "motifManquant": {
+                    "summary": "Rejet sans motif (admin)",
+                    "value": {
+                      "success": false,
+                      "message": "Motif de rejet obligatoire"
+                    }
+                  },
+                  "plusModifiable": {
+                    "summary": "Usager - la demande n'est plus en_attente",
+                    "value": {
+                      "success": false,
+                      "message": "Cette demande ne peut plus être modifiée"
+                    }
+                  },
+                  "renouvellementTropTot": {
+                    "summary": "Admin - validation d'un renouvellement trop tôt",
+                    "value": {
+                      "success": false,
+                      "message": "Renouvellement non autorisé: la carte n'expire pas dans les 3 prochains mois"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Admin - la demande est déjà traitée par un autre administrateur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Demande en cours assignée à un autre administrateur"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Demande inexistante, ou appartenant à un autre usager",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Demande non trouvée ou accès non autorisé"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur inattendue. Bug connu : un usager qui change le `type` de sa\ndemande obtient toujours cette erreur, car le contrôleur appelle\n`demande.initialiserDocumentsRequis()`, une méthode absente du modèle.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Erreur lors de la modification de la demande"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token obtenu via `POST /api/auth/login` (champ `data.token`), valable 24 h.\n"
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Token absent, mal formé, invalide/expiré, ou compte suspendu",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "tokenManquant": {
+                "summary": "Pas d'en-tête Authorization",
+                "value": {
+                  "success": false,
+                  "message": "Accès refusé. Token manquant."
+                }
+              },
+              "formatInvalide": {
+                "summary": "En-tête sans le préfixe \"Bearer \"",
+                "value": {
+                  "success": false,
+                  "message": "Format de token invalide. Utilisez: Bearer <token>"
+                }
+              },
+              "tokenInvalide": {
+                "summary": "Signature invalide ou token expiré",
+                "value": {
+                  "success": false,
+                  "message": "Token invalide ou expiré"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "description": "Message d'erreur lisible (en français)"
+          },
+          "demandeExistante": {
+            "type": "object",
+            "description": "Seulement pour \"Vous avez déjà une demande en cours\"",
+            "properties": {
+              "numero": {
+                "type": "string"
+              },
+              "statut": {
+                "$ref": "#/components/schemas/StatutDemande"
+              }
+            }
+          },
+          "missingDocuments": {
+            "type": "array",
+            "description": "Seulement pour \"Documents obligatoires manquants\"",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requiredDocuments": {
+            "type": "array",
+            "description": "Seulement pour \"Documents obligatoires manquants\"",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ObjectId": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$",
+        "example": "6ac958513184b5e2f2b7283f"
+      },
+      "StatutDemande": {
+        "type": "string",
+        "enum": [
+          "en_attente",
+          "en_cours_traitement",
+          "validee",
+          "rejetee"
+        ]
+      },
+      "TypeDemande": {
+        "type": "string",
+        "enum": [
+          "nouvelle",
+          "renouvellement"
+        ]
+      },
+      "AncienneCarte": {
+        "type": "object",
+        "required": [
+          "numero",
+          "dateExpiration"
+        ],
+        "properties": {
+          "numero": {
+            "type": "string",
+            "description": "Numéro de la carte CEC actuelle",
+            "example": "CEC-202610-242420"
+          },
+          "dateExpiration": {
+            "type": "string",
+            "format": "date",
+            "example": "2027-10-09"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "motDePasse"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Insensible à la casse"
+          },
+          "motDePasse": {
+            "type": "string",
+            "format": "password"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "token": {
+                "type": "string",
+                "description": "JWT (payload - userId, email, role) valable 24 h"
+              },
+              "user": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "$ref": "#/components/schemas/ObjectId"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "admin",
+                      "handicap"
+                    ]
+                  },
+                  "nom": {
+                    "type": "string"
+                  },
+                  "prenom": {
+                    "type": "string"
+                  },
+                  "derniereConnexion": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "CreerDemandeRequest": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/TypeDemande"
+          },
+          "ancienneCarte": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AncienneCarte"
+              }
+            ],
+            "description": "Obligatoire si `type` = `renouvellement`"
+          }
+        }
+      },
+      "CreerDemandeResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/ObjectId"
+              },
+              "numeroDemande": {
+                "type": "string",
+                "example": "SN-202610-241993"
+              },
+              "type": {
+                "$ref": "#/components/schemas/TypeDemande"
+              },
+              "statut": {
+                "$ref": "#/components/schemas/StatutDemande"
+              },
+              "dateCreation": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      },
+      "DemandeResume": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "numeroDemande": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/TypeDemande"
+          },
+          "statut": {
+            "$ref": "#/components/schemas/StatutDemande"
+          },
+          "dateCreation": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dateDerniereModification": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dateTraitement": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "proprietaire": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/ObjectId"
+              },
+              "prenom": {
+                "type": "string"
+              },
+              "nom": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "telephone": {
+                "type": "string"
+              }
+            }
+          },
+          "assignedAdmin": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "nullable": true,
+            "description": "Admin qui traite la demande (null si aucun)"
+          },
+          "commentairesAdmin": {
+            "type": "string"
+          },
+          "motifRejet": {
+            "type": "string"
+          }
+        }
+      },
+      "ListeDemandesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "demandes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DemandeResume"
+                }
+              },
+              "pagination": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  },
+                  "total": {
+                    "type": "integer",
+                    "description": "Nombre total de demandes correspondant aux filtres"
+                  },
+                  "pages": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "stats": {
+                "type": "object",
+                "description": "Compteurs globaux (tous filtres ignorés)",
+                "properties": {
+                  "total": {
+                    "type": "integer"
+                  },
+                  "en_attente": {
+                    "type": "integer"
+                  },
+                  "en_cours_traitement": {
+                    "type": "integer"
+                  },
+                  "validee": {
+                    "type": "integer"
+                  },
+                  "rejetee": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ModifierDemandeAdminRequest": {
+        "title": "Admin",
+        "type": "object",
+        "properties": {
+          "statut": {
+            "$ref": "#/components/schemas/StatutDemande"
+          },
+          "commentairesAdmin": {
+            "type": "string"
+          },
+          "motifRejet": {
+            "type": "string",
+            "description": "Obligatoire si `statut` = `rejetee`"
+          }
+        }
+      },
+      "ModifierDemandeUsagerRequest": {
+        "title": "Usager",
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/TypeDemande"
+          },
+          "ancienneCarte": {
+            "$ref": "#/components/schemas/AncienneCarte"
+          }
+        }
+      },
+      "ModifierDemandeResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/ObjectId"
+              },
+              "numeroDemande": {
+                "type": "string"
+              },
+              "statut": {
+                "$ref": "#/components/schemas/StatutDemande"
+              },
+              "dateDerniereModification": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "dateTraitement": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Présent quand la demande passe à validee ou rejetee"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

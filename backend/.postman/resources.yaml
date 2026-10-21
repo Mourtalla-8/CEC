@@ -1,0 +1,18 @@
+workspace:
+  id: af664035-0615-4faf-823c-42076e15fd2a
+localResources:
+  collections:
+    - ../docs/API CEC - Carte d'Égalité des Chances
+  specs:
+    - ../docs/openapi.auto.json
+    - ../docs/openapi.json
+cloudResources:
+  collections:
+    ../docs/API CEC - Carte d'Égalité des Chances: 57590725-983f0099-9c1d-488e-be35-74fbeb1b75e3
+  specs:
+    ../docs/openapi.auto.json: 922fe8b2-a66b-4c1a-af7f-6aa99309a156
+    ../docs/openapi.json: bdeab77b-099d-40dc-84cc-cf21f9ac0a9a
+  globals:
+    ../postman/globals/workspace.globals.yaml: 7e46f799-72bd-4f84-8c8e-a4d0402f79f0
+  environments:
+    ../postman/environments/CEC - Local.environment.yaml: 57590725-ccf22b4d-97e4-46b5-a6bb-2a866629846b

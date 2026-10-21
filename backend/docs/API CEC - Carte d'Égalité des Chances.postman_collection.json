@@ -1,0 +1,691 @@
+{
+  "info": {
+    "_postman_id": "983f0099-9c1d-488e-be35-74fbeb1b75e3",
+    "name": "API CEC - Carte d'Égalité des Chances",
+    "description": "Scénario complet : un usager se connecte et crée une demande, puis un admin la liste, la prend en charge et la valide (ce qui crée la carte CEC).\n\nÀ lancer dans l'ordre (Runner). Prérequis : l'usager a déposé ses pièces justificatives et n'a ni demande en cours ni carte.\n\nVariables : baseUrl, identifiants de test, puis tokenHandicap, tokenAdmin et demandeId, remplies automatiquement par les scripts de test.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57590725",
+    "_collection_link": "https://go.postman.co/collection/57590725-983f0099-9c1d-488e-be35-74fbeb1b75e3?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Erreurs",
+      "item": [
+        {
+          "name": "Login - 400 mot de passe manquant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailHandicap}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login - 401 mauvais mot de passe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailHandicap}}\",\n  \"motDePasse\": \"mauvais\"\n}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Lister - 401 sans token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/demandes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demandes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Lister - 403 avec un token usager",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenHandicap}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/demandes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demandes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Créer - 400 type invalide",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenHandicap}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"premiere\"\n}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/demandes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demandes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Modifier - 400 id invalide",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"validee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/demandes/123",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demandes",
+                "123"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Modifier - 404 demande inexistante",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"validee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/demandes/000000000000000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demandes",
+                "000000000000000000000000"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Modifier - 400 rejet sans motif",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"rejetee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/demandes/{{demandeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demandes",
+                "{{demandeId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Exemples de réponses d'erreur."
+    },
+    {
+      "name": "1. Login usager",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));\nconst body = pm.response.json();\npm.test('rôle handicap', () => pm.expect(body.data.user.role).to.eql('handicap'));\npm.environment.set('tokenHandicap', body.data.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{emailHandicap}}\",\n  \"motDePasse\": \"{{motDePasseHandicap}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Connexion unifiée. Le rôle est déduit par le serveur. Stocke data.token dans {{tokenHandicap}}."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Créer une demande (usager)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));\nconst body = pm.response.json();\npm.test('statut en_attente', () => pm.expect(body.data.statut).to.eql('en_attente'));\npm.environment.set('demandeId', body.data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenHandicap}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"nouvelle\"\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/demandes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "demandes"
+          ]
+        },
+        "description": "Rôle handicap requis. type = nouvelle | renouvellement (ancienneCarte requis pour un renouvellement). Stocke data.id dans {{demandeId}}."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Login admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));\nconst body = pm.response.json();\npm.test('rôle admin', () => pm.expect(body.data.user.role).to.eql('admin'));\npm.environment.set('tokenAdmin', body.data.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{emailAdmin}}\",\n  \"motDePasse\": \"{{motDePasseAdmin}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Admin créé par `npm run seed`. Stocke data.token dans {{tokenAdmin}}."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Lister les demandes (admin)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));\nconst body = pm.response.json();\npm.test('la demande créée est listée', () => {\n  const ids = body.data.demandes.map(d => d.id);\n  pm.expect(ids).to.include(pm.collectionVariables.get('demandeId'));\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenAdmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/demandes?statut=en_attente&type=tous&page=1&limit=10",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "demandes"
+          ],
+          "query": [
+            {
+              "key": "statut",
+              "value": "en_attente",
+              "description": "tous | en_attente | en_cours_traitement | validee | rejetee"
+            },
+            {
+              "key": "type",
+              "value": "tous",
+              "description": "tous | nouvelle | renouvellement"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "search",
+              "value": "",
+              "description": "Numéro de demande, nom, prénom ou email",
+              "disabled": true
+            }
+          ]
+        },
+        "description": "Rôle admin requis. Liste paginée + statistiques par statut."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Prendre en charge la demande (admin)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));\npm.test('statut en_cours_traitement', () => pm.expect(pm.response.json().data.statut).to.eql('en_cours_traitement'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenAdmin}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"statut\": \"en_cours_traitement\",\n  \"commentairesAdmin\": \"Dossier complet, traitement démarré\"\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/demandes/{{demandeId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "demandes",
+            "{{demandeId}}"
+          ]
+        },
+        "description": "Assigne la demande à l'admin connecté."
+      },
+      "response": []
+    },
+    {
+      "name": "6. Valider la demande (admin) - crée la carte",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));\nconst res = pm.response.json().data;\npm.test('statut validee', () => pm.expect(res.statut).to.eql('validee'));\npm.test('dateTraitement renseignée', () => pm.expect(res.dateTraitement).to.be.a('string'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenAdmin}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"statut\": \"validee\"\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/demandes/{{demandeId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "demandes",
+            "{{demandeId}}"
+          ]
+        },
+        "description": "Pour une demande de type nouvelle : crée la carte CEC (valable 1 an). Pour rejeter : {\"statut\": \"rejetee\", \"motifRejet\": \"...\"}."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "emailHandicap",
+      "value": "test@test.com"
+    },
+    {
+      "key": "motDePasseHandicap",
+      "value": ""
+    },
+    {
+      "key": "emailAdmin",
+      "value": "admin@test.com"
+    },
+    {
+      "key": "motDePasseAdmin",
+      "value": ""
+    },
+    {
+      "key": "tokenHandicap",
+      "value": ""
+    },
+    {
+      "key": "tokenAdmin",
+      "value": ""
+    },
+    {
+      "key": "demandeId",
+      "value": ""
+    }
+  ]
+}

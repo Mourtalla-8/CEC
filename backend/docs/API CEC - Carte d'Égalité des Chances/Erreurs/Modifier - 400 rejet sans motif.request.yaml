@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/api/demandes/{{demandeId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenAdmin}}
+body:
+  type: text
+  content: |-
+    {
+      "statut": "rejetee"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test('400', () => pm.response.to.have.status(400));
+    language: text/javascript
+order: 8000

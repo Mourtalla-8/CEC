@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/api/demandes/123"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenAdmin}}
+body:
+  type: text
+  content: |-
+    {
+      "statut": "validee"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test('400', () => pm.response.to.have.status(400));
+    language: text/javascript
+order: 6000
