@@ -17,7 +17,7 @@
     "@angular/material": "^20.0.0",
     "@angular/platform-browser": "^20.0.0",
     "@angular/router": "^20.0.0",
-    "apexcharts": "~5.15.2",
+    "apexcharts": "~8.3.1",
     "lucide-angular": "^0.545.0",
     "ng-apexcharts": "^2.0.3",
     "ngx-toastr": "^19.1.0",
