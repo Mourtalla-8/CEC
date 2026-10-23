@@ -33,13 +33,12 @@ carteSchema.statics.generateNumero = async function() {
 };
 
 // Définir dateExpiration par défaut à +1 an si absente
-carteSchema.pre('validate', function(next) {
+carteSchema.pre('validate', function() {
   if (!this.dateExpiration && this.dateDelivrance) {
     const d = new Date(this.dateDelivrance);
     d.setFullYear(d.getFullYear() + 1);
     this.dateExpiration = d;
   }
-  next();
 });
 
 module.exports = mongoose.model('CarteCEC', carteSchema);
