@@ -109,15 +109,11 @@ demandeCECSchema.methods.obtenirActionPourStatut = function(statut) {
 // MIDDLEWARE PRE-SAVE
 // ===================
 
-demandeCECSchema.pre('save', async function(next) {
-  try {
-    if (this.isNew) {
-      this.numeroDemande = await this.constructor.generateNumeroDemande();
-      this.historique.push({ action: 'creation', acteur: this.utilisateur.toString(), details: 'Création de la demande' });
-    }
-    next();
-  } catch (err) {
-    next(err);
+// async : une erreur levée ici fait échouer le save (mongoose 9 ne passe plus next)
+demandeCECSchema.pre('save', async function() {
+  if (this.isNew) {
+    this.numeroDemande = await this.constructor.generateNumeroDemande();
+    this.historique.push({ action: 'creation', acteur: this.utilisateur.toString(), details: 'Création de la demande' });
   }
 });
 

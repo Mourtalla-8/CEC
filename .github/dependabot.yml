@@ -8,6 +8,10 @@ updates:
     groups:
       backend-minor-patch:
         update-types: [minor, patch]
+    ignore:
+      # ioredis-mock (repli sans Redis) n'accepte que ioredis ^5
+      - dependency-name: ioredis
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: /frontend
