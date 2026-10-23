@@ -6,7 +6,7 @@
  */
 
 // Import des modules nécessaires
-require('dotenv').config(); // Pour charger les variables d'environnement
+require('dotenv').config({ quiet: true }); // Pour charger les variables d'environnement
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
@@ -43,6 +43,9 @@ app.use(express.json());
 
 // Parser URL-encoded : pour les formulaires
 app.use(express.urlencoded({ extended: true }));
+
+// Express 5 laisse req.body à undefined sans corps de requête : on garde {} comme en Express 4
+app.use((req, res, next) => { req.body ??= {}; next(); });
 
 // Servir les fichiers statiques uploadés
 app.use('/uploads', express.static('uploads'));
@@ -96,7 +99,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // =============================
 
 // Middleware pour gérer les routes non trouvées
-app.use('*', (req, res) => {
+app.use((req, res) => {
   res.status(404).json({
     success: false,
     message: `Route ${req.originalUrl} non trouvée`
