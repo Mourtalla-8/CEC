@@ -20,7 +20,7 @@
   "author": "Les Architectes du Code",
   "license": "MIT",
   "dependencies": {
-    "archiver": "^5.3.2",
+    "archiver": "^8.0.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^18.0.9",
