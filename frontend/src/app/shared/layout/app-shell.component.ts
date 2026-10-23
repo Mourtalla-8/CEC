@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -25,6 +25,7 @@ import { Router, NavigationEnd } from '@angular/router';
     MatMenuModule
 ],
   templateUrl: './app-shell.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./app-shell.component.css']
 })
 export class AppShellComponent implements OnInit {

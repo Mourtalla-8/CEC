@@ -51,7 +51,7 @@
             <mat-icon>event</mat-icon>
             <div>
               <strong>Date de naissance</strong>
-              <div class="muted">{{ profile?.dateNaissance | date:'dd/MM/yyyy' }}</div>
+              <div class="muted">{{ $safeNavigationMigration(profile?.dateNaissance) | date:'dd/MM/yyyy' }}</div>
             </div>
           </div>
           <div class="profile-row">
@@ -103,7 +103,7 @@
               <div><strong>Nom</strong><br>{{ profile?.nom }}</div>
               <div><strong>Prénom</strong><br>{{ profile?.prenom }}</div>
               <div><strong>Sexe</strong><br>{{ profile?.sexe }}</div>
-              <div><strong>Date de naissance</strong><br>{{ profile?.dateNaissance | date:'dd/MM/yyyy' }}</div>
+              <div><strong>Date de naissance</strong><br>{{ $safeNavigationMigration(profile?.dateNaissance) | date:'dd/MM/yyyy' }}</div>
               <div class="span-2"><strong>Type de handicap</strong><br>{{ profile?.typeHandicap }}</div>
             </div>
           </div>

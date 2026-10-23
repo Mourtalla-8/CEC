@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -55,6 +55,7 @@ import { AuthService } from '../services/auth.service';
       </mat-card>
     </div>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .profile-container { padding: 16px; display: flex; justify-content: center; }
     .profile-card { width: 100%; max-width: 720px; background: #fff; color: var(--text-primary); }

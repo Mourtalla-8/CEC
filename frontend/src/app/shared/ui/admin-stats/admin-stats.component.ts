@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 
 import { NgApexchartsModule } from 'ng-apexcharts';
 import {
@@ -51,6 +51,7 @@ import {
     </apx-chart>
   </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .charts-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
     .chart-card { background: #fff; border-radius: 8px; box-shadow: var(--shadow-light); padding: 8px; }
