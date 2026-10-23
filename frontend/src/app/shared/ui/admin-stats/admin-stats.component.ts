@@ -1,5 +1,5 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+
 import { NgApexchartsModule } from 'ng-apexcharts';
 import {
   ApexAxisChartSeries,
@@ -18,7 +18,7 @@ import {
 @Component({
   selector: 'app-admin-stats',
   standalone: true,
-  imports: [CommonModule, NgApexchartsModule],
+  imports: [NgApexchartsModule],
   template: `
   <div class="charts-grid" role="region" aria-label="Statistiques des demandes">
     <apx-chart
@@ -51,6 +51,7 @@ import {
     </apx-chart>
   </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .charts-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
     .chart-card { background: #fff; border-radius: 8px; box-shadow: var(--shadow-light); padding: 8px; }

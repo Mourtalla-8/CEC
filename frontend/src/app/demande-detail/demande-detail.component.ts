@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -35,6 +35,7 @@ import { NotificationService } from '../shared/services/notification.service';
     FormsModule
   ],
   templateUrl: './demande-detail.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./demande-detail.component.css']
 })
 export class DemandeDetailComponent implements OnInit, OnDestroy {

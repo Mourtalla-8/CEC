@@ -3,7 +3,7 @@
  * Interface principale pour les utilisateurs handicapés
  */
 
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -63,6 +63,7 @@ import { CarteUpdatedEvent, DemandeRealtimeEvent, DocumentUploadedEvent } from '
     
   ],
   templateUrl: './handicap-dashboard.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./handicap-dashboard.component.css']
 })
 export class HandicapDashboardComponent implements OnInit, OnDestroy {
