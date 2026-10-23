@@ -4,7 +4,7 @@
  */
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -18,7 +18,6 @@ import { AuthService } from '../services/auth.service';
   selector: 'app-reset-password',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterModule,
     MatCardModule,
@@ -26,7 +25,7 @@ import { AuthService } from '../services/auth.service';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule
-  ],
+],
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.css']
 })

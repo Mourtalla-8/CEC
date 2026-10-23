@@ -26,18 +26,24 @@ import { AuthService } from '../services/auth.service';
               <span class="label">Rôle</span>
               <span class="value">{{ user?.role || 'handicap' }}</span>
             </div>
-            <div class="info-item" *ngIf="profile?.telephone">
-              <span class="label">Téléphone</span>
-              <span class="value">{{ profile?.telephone }}</span>
-            </div>
-            <div class="info-item" *ngIf="profile?.adresse">
-              <span class="label">Adresse</span>
-              <span class="value">{{ profile?.adresse }}</span>
-            </div>
-            <div class="info-item" *ngIf="profile?.dateNaissance as dn">
-              <span class="label">Date de naissance</span>
-              <span class="value">{{ dn | date:'dd/MM/yyyy' }}</span>
-            </div>
+            @if (profile?.telephone) {
+              <div class="info-item">
+                <span class="label">Téléphone</span>
+                <span class="value">{{ profile?.telephone }}</span>
+              </div>
+            }
+            @if (profile?.adresse) {
+              <div class="info-item">
+                <span class="label">Adresse</span>
+                <span class="value">{{ profile?.adresse }}</span>
+              </div>
+            }
+            @if (profile?.dateNaissance; as dn) {
+              <div class="info-item">
+                <span class="label">Date de naissance</span>
+                <span class="value">{{ dn | date:'dd/MM/yyyy' }}</span>
+              </div>
+            }
           </div>
         </mat-card-content>
         <mat-card-actions>
@@ -48,7 +54,7 @@ import { AuthService } from '../services/auth.service';
         </mat-card-actions>
       </mat-card>
     </div>
-  `,
+    `,
   styles: [`
     .profile-container { padding: 16px; display: flex; justify-content: center; }
     .profile-card { width: 100%; max-width: 720px; background: #fff; color: var(--text-primary); }

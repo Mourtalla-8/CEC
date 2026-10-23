@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -17,7 +17,6 @@ import { SignupData } from '../models/user.model';
   selector: 'app-signup',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterModule,
     MatCardModule,
@@ -28,7 +27,7 @@ import { SignupData } from '../models/user.model';
     MatNativeDateModule,
     MatIconModule,
     MatProgressSpinnerModule
-  ],
+],
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.css']
 })

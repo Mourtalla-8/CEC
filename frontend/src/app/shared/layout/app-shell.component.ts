@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,7 +15,6 @@ import { Router, NavigationEnd } from '@angular/router';
   selector: 'app-shell',
   standalone: true,
   imports: [
-    CommonModule,
     RouterOutlet,
     MatToolbarModule,
     MatIconModule,
@@ -24,7 +23,7 @@ import { Router, NavigationEnd } from '@angular/router';
     MatListModule,
     MatDividerModule,
     MatMenuModule
-  ],
+],
   templateUrl: './app-shell.component.html',
   styleUrls: ['./app-shell.component.css']
 })

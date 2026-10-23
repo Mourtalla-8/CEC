@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { NgApexchartsModule } from 'ng-apexcharts';
 import {
   ApexAxisChartSeries,
@@ -18,7 +18,7 @@ import {
 @Component({
   selector: 'app-admin-stats',
   standalone: true,
-  imports: [CommonModule, NgApexchartsModule],
+  imports: [NgApexchartsModule],
   template: `
   <div class="charts-grid" role="region" aria-label="Statistiques des demandes">
     <apx-chart

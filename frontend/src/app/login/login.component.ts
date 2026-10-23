@@ -4,7 +4,7 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -19,7 +19,6 @@ import { SocketService } from '../services/socket.service';
   selector: 'app-login',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterModule,
     MatCardModule,
@@ -27,7 +26,7 @@ import { SocketService } from '../services/socket.service';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule
-  ],
+],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
