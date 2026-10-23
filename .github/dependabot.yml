@@ -15,16 +15,16 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
-      # les paquets Angular doivent monter ensemble, sinon npm ci échoue (conflit de peer deps)
+      # Angular, TypeScript et zone.js doivent monter ensemble, sinon npm ci échoue (conflit de peer deps)
       angular:
-        patterns: ["@angular/*"]
+        patterns: ["@angular/*", "typescript", "zone.js"]
       frontend-minor-patch:
         update-types: [minor, patch]
-        exclude-patterns: ["@angular/*"]
+        exclude-patterns: ["@angular/*", "typescript", "zone.js"]
     ignore:
-      # types cassés (ApexDrilldownEvent manquant)
-      - dependency-name: apexcharts
-        versions: ["5.16.0"]
+      # suivre la version de Node utilisée (22), pas la dernière
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
