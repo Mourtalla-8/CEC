@@ -28,8 +28,8 @@
     "ioredis": "^5.11.1",
     "ioredis-mock": "^8.9.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^9.11.3",
-    "multer": "^2.4.0",
+    "mongoose": "^9.11.4",
+    "multer": "^2.5.0",
     "socket.io": "^4.7.4",
     "swagger-ui-express": "^5.0.1"
   },
